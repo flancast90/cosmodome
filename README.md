@@ -3,8 +3,9 @@
 2. ``npm install socket.io``
 3. ``npm install body-parser``
 4. ``npm install express``
-5. launch game server with ``node server.js``
-6. navigate to [localhost:8000](https://localhost:8000) to view the game and play. Try joining with different tabs
+5. ``npm install socket.io``
+6. launch game server with ``node server.js``
+7. navigate to [localhost:8000](https://localhost:8000) to view the game and play. Try joining with different tabs
 
 # TODO
 1. Fix viewport in index.html (look up Canvas Viewport)
