@@ -7,64 +7,63 @@ const { Server } = require("socket.io");
 var bodyParser = require('body-parser');
 const io = new Server(server);
 
+const { Ship } = require('./backend/models');
+const { Log, LogLevel } = require('./backend/utils');
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const gameState = {
+var game = {
     players: {}
-}
+};
 
-const BUILDPATH = path.join(__dirname);
+const BUILDPATH = path.join(__dirname, "static");
 app.use(express.static(BUILDPATH));
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/static/index.html');
+  res.sendFile(__dirname + 'index.html');
 });
 
-io.on('connection', (socket) => {
-  socket.on('join', function (data) {
-    console.log(data.uname+' ('+socket.id+') connected');
-    
-    gameState.players[socket.id] = {
-        x: 40,
-        y: 40,
-        width:40,
-        clientWidth: data.width,
-        clientHeight: data.height,
-        count: 0,
-        storedCoords: {}
-    }
-    
-    socket.on('movement', (playerMovement) => {
-        const player = gameState.players[socket.id];
+io.on('connection', socket => {
+    Log(`A new player has connected with id of ${socket.id}`, LogLevel.info);
 
-        var gameWidth = 10000;
-        var gameHeight = 10000;
-        if ((playerMovement.left)&&(player.x > 0)){
-            player.x -= 2;
-        }
-        if ((playerMovement.right)&&(player.x < gameWidth)){
-            player.x += 2;
-        }
-        if ((playerMovement.up)&&(player.y > 0)){
-            player.y -= 2;
-        }
-        if ((playerMovement.down)&&(player.y < gameHeight)){
-            player.y += 2;
-        }
+    (() => {
+        var ship = new Ship(socket.id);
+        game.players[socket.id] = ship;
+        
+        socket.emit('join', { ship, state: Object.keys(game.players).map(key => game.players[key]) });
+    })();
+
+    socket.on('keydown', key => {
+      game.players[socket.id].keys[key] = true;
     });
-    
-    setInterval(() => {
-        io.sockets.emit('state', gameState);
-    }, 1000/60);
 
-   socket.on('disconnect', () => {
-        console.log(data.uname+' ('+socket.id+') disconnected');
-        delete gameState.players[socket.id];
+    socket.on('keyup', key => {
+      game.players[socket.id].keys[key] = false;
     });
-  });
 
+    socket.on('disconnect', () => {
+        game.players[socket.id] = undefined;
+        Log(`A player with id of ${socket.id} has disconnected`, LogLevel.info);
+    });
 });
+
+setInterval(() => {
+  for (const key in game.players) {
+    if (Object.hasOwnProperty.call(game.players, key) && game.players[key]) {
+      
+      if (game.players[key].keys['w']) game.players[key].end.y += 3;
+      if (game.players[key].keys['s']) game.players[key].end.y -= 3;
+      if (game.players[key].keys['a']) game.players[key].end.x += 3;
+      if (game.players[key].keys['d']) game.players[key].end.x -= 3;
+
+      game.players[key].pos.x += (game.players[key].end.x - game.players[key].pos.x) * 0.2;
+      game.players[key].pos.y += (game.players[key].end.y - game.players[key].pos.y) * 0.2;
+    };
+  }
+
+  io.sockets.emit('state', Object.keys(game.players).map(key => game.players[key]));
+}, 20);
 
 server.listen(8000, () => {
   console.log('🚀 Client Running on: http://localhost:8000');
