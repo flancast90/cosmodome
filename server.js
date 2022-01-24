@@ -25,14 +25,15 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', socket => {
-    Log(`A new player has connected with id of ${socket.id}`, LogLevel.info);
+    Log(`${socket.id} connected`, LogLevel.info);
 
-    (() => {
+    socket.on('start', username => {
         var ship = new Ship(socket.id);
         game.players[socket.id] = ship;
+        game.players[socket.id].username = username;
         
         socket.emit('join', { ship, state: Object.keys(game.players).map(key => game.players[key]) });
-    })();
+    });
 
     socket.on('keydown', key => {
       game.players[socket.id].keys[key] = true;
@@ -44,7 +45,7 @@ io.on('connection', socket => {
 
     socket.on('disconnect', () => {
         game.players[socket.id] = undefined;
-        Log(`A player with id of ${socket.id} has disconnected`, LogLevel.info);
+        Log(`${socket.id} disconnected`, LogLevel.info);
     });
 });
 
