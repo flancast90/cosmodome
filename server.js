@@ -32,15 +32,32 @@ io.on('connection', socket => {
         game.players[socket.id] = ship;
         game.players[socket.id].username = username;
         
+        const d = new Date();
+        game.players[socket.id].time = d.getTime();
+        
         socket.emit('join', { ship, state: Object.keys(game.players).map(key => game.players[key]) });
     });
 
     socket.on('keydown', key => {
-      game.players[socket.id].keys[key] = true;
+      if (key == "w" || key == "a" || key == "s" || key == "d") {
+      	game.players[socket.id].keys[key] = true;
+      }
     });
 
     socket.on('keyup', key => {
-      game.players[socket.id].keys[key] = false;
+      if (key == "w" || key == "a" || key == "s" || key == "d") {
+      	game.players[socket.id].keys[key] = false;
+      }
+    });
+    
+    socket.on('chat', msg => {
+      try {
+      	var username = game.players[socket.id].username;
+      } catch {
+      	return
+      }
+    
+      io.sockets.emit('chat', {username, msg});
     });
 
     socket.on('disconnect', () => {
@@ -50,6 +67,11 @@ io.on('connection', socket => {
 });
 
 setInterval(() => {
+  const d = new Date();
+  var currentTime = d.getTime();
+  var leaderboard = {};
+  var state = []
+		
   for (const key in game.players) {
     if (Object.hasOwnProperty.call(game.players, key) && game.players[key]) {
       
@@ -60,11 +82,26 @@ setInterval(() => {
 
       game.players[key].pos.x += (game.players[key].end.x - game.players[key].pos.x) * 0.2;
       game.players[key].pos.y += (game.players[key].end.y - game.players[key].pos.y) * 0.2;
+      
+      // time alive in seconds
+	  timeAlive = (parseInt(currentTime) - parseInt(game.players[key].time))/1000;	
+	  var username = game.players[key].username
+	  
+	  leaderboard[username] = {score: (timeAlive*100)};
+	  leaderboard[username].id = key
+	  
     };
   }
 
-  io.sockets.emit('state', Object.keys(game.players).map(key => game.players[key]));
+  for (var player in game.players) {
+  	if (player != null) {
+  		state.push(game.players[player])
+  	}
+  }
+
+  io.sockets.emit('state', {leaderboard, state});
 }, 20);
+
 
 server.listen(8000, () => {
   console.log('🚀 Client Running on: http://localhost:8000');
