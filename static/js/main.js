@@ -4,6 +4,9 @@ const ctx = canvas.getContext('2d');
 
 var state = null;
 var ship = null;
+
+var socket = io();
+
 const ships = [
     (() => {
         var img = new Image();
@@ -22,21 +25,54 @@ const ships = [
     })(),
 ];
 
-
-var socket = io();
-
 socket.on('join', data => {
-    state = data.state;
-    ship = data.ship;
+   	state = data.state;
+   	ship = data.ship;
+   	
+   	// start listening for state updates now that game is started
+   	socket.on('state', data => {
+   		state = data;
+   		// alert(JSON.stringify(state));
+   	
+   		requestAnimationFrame(update);
+	});
 });
 
-socket.on('state', data => {
-    state = data;
-});
+/*
+ * Function drawBoard - draws grid on canvas
+ * takes 3 args, height, width
+*/
+var drawBoard = function(w, h) {
+    for (x = 0; x <= w; x += 50) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        for (y = 0; y <= h; y += 50) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+        }
+    }
+    ctx.strokeStyle = "white";
+    ctx.stroke();
 
-requestAnimationFrame(function update() {
-    requestAnimationFrame(update);
+};
 
+/* 
+ * function renderGame_Fields - prepares UI for playing
+ * hides starting UI, tells server to start mainloop
+ * takes 1 arg: name, representing the player's given username
+*/	
+function renderGame_Fields(name) {
+	var ui = document.getElementById('ui');
+	ui.style.display = "none";
+	
+	socket.emit('start', name);
+}
+
+/*
+ * function update - renders game elements on the client side
+ * takes no args, relying on data sent by server in mainloop
+*/
+function update() {
     canvas.width = innerWidth;
     canvas.height = innerHeight;
 
@@ -44,6 +80,7 @@ requestAnimationFrame(function update() {
         return;
     }
 
+	drawBoard(canvas.width, canvas.height);
     ctx.translate((innerWidth - shipWidth) / 2, (innerHeight - shipWidth) / 2);
     ctx.save();
     ctx.rotate(ship.pos.r);
@@ -57,13 +94,12 @@ requestAnimationFrame(function update() {
 
     state.forEach(x => {
         if (!x || x.id == ship.id) return;
-        console.log(x.pos);
         ctx.drawImage(ships[x.ship], ship.pos.x - x.pos.x, ship.pos.y - x.pos.y, shipWidth, shipWidth);
         ctx.fillText(x.username, ship.pos.x - x.pos.x + shipWidth / 2, ship.pos.y - x.pos.y, shipWidth * 2);
     });
 
     shipWidth = Math.max(innerWidth, innerHeight) / 15;
-});
+}
 
 addEventListener('keydown', e => socket.emit('keydown', e.key));
 addEventListener('keyup', e => socket.emit('keyup', e.key));
