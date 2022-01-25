@@ -6,6 +6,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 var bodyParser = require('body-parser');
 const io = new Server(server);
+const exile = require('./backend/exile');
 
 const { Ship } = require('./backend/models');
 const { Log, LogLevel } = require('./backend/utils');
@@ -13,24 +14,45 @@ const { Log, LogLevel } = require('./backend/utils');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-var game = {
+game = {
     players: {}
 };
 
 const BUILDPATH = path.join(__dirname, "static");
 app.use(express.static(BUILDPATH));
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + 'index.html');
-});
-
 io.on('connection', socket => {
-    Log(`${socket.id} connected`, LogLevel.info);
+  
+    // uses exile-js library to determine if user is
+    // banned or not
+    app.post('/exile', function (req, res) {
+      fingerprint = req.body.fingerprint;
+      
+      if (exile.check(fingerprint) == "banned") {
+	res.status(403).send();
+      }else{
+	res.status(200).send();
+      }
+      
+      Log(`${fingerprint} connected`, LogLevel.info);
+    });
+    
+    // set dev to true on developer page
+    app.get('/dev', (req, res) => {
+      res.sendFile('static/index.html', {root: __dirname});
+    });
 
-    socket.on('start', username => {
-        var ship = new Ship(socket.id);
-        game.players[socket.id] = ship;
-        game.players[socket.id].username = username;
+    socket.on('start', data => {
+	var ship = new Ship(socket.id);
+	game.players[socket.id] = ship;
+        game.players[socket.id].username = data.name;
+	game.players[socket.id].fingerprint = fingerprint;
+	
+	if (data.location.replace(/^.*[\\\/]/, '') == "dev") {
+	  game.players[socket.id].isDev = true
+	} else {
+	  game.players[socket.id].isDev = false
+	}
         
         const d = new Date();
         game.players[socket.id].time = d.getTime();
@@ -57,12 +79,40 @@ io.on('connection', socket => {
       	return
       }
     
-      io.sockets.emit('chat', {username, msg});
+      // add chat command support
+      if (game.players[socket.id].isDev == true) {
+	if (msg.includes('!ban ')) {
+	  var person = msg.split('!ban ')[1]
+	  var ban = exile.ban(person)
+	  
+	  io.sockets.emit('chat', {username: "SYSTEM", msg: ban});
+	} else if (msg.includes('!unban ')) {
+	  var person = msg.split('!unban ')[1]
+	  var ban = exile.unban(person)
+	  
+	  io.sockets.emit('chat', {username: "SYSTEM", msg: ban});
+	} else if (msg.includes('!check ')) {
+	  var person = msg.split('!check ')[1]
+	  var ban = exile.check(person);
+	  var res = person+" ban status: "+ban;
+	  
+	  io.sockets.emit('chat', {username: "SYSTEM", msg: res});
+	} else {
+	  io.sockets.emit('chat', {username, msg});
+	}
+      } else {
+	io.sockets.emit('chat', {username, msg});
+      }
     });
 
     socket.on('disconnect', () => {
-        delete game.players[socket.id];
-        Log(`${socket.id} disconnected`, LogLevel.info);
+      try {
+        Log(`${game.players[socket.id].fingerprint} disconnected`, LogLevel.info);
+      } catch {
+	Log(`${socket.id} disconnected.`);
+      }
+      
+      delete game.players[socket.id];
     });
 });
 
@@ -92,11 +142,11 @@ setInterval(() => {
       game.players[key].pos.y += (game.players[key].end.y - game.players[key].pos.y) * 0.2;
       
       // time alive in seconds
-	  timeAlive = (parseInt(currentTime) - parseInt(game.players[key].time))/1000;	
-	  var username = game.players[key].username
+      timeAlive = (parseInt(currentTime) - parseInt(game.players[key].time))/1000;	
+      var username = game.players[key].username
 	  
-	  leaderboard[username] = {score: (timeAlive*100)};
-	  leaderboard[username].id = key
+      leaderboard[username] = {score: (timeAlive*100)};
+      leaderboard[username].id = key
 	  
     };
   }
