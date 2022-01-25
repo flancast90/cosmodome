@@ -6,6 +6,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 var bodyParser = require('body-parser');
 const io = new Server(server);
+const basicAuth = require('express-basic-auth');
 const exile = require('./backend/exile');
 
 const { Ship } = require('./backend/models');
@@ -22,8 +23,12 @@ const BUILDPATH = path.join(__dirname, "static");
 app.use(express.static(BUILDPATH));
 
 // set dev to true on developer page
-app.get('/dev', (req, res) => {
-  res.sendFile('static/index.html', {root: __dirname});
+// look for credentials onload
+app.get('/dev', basicAuth({
+    users: { dev: 'D3V3L0P3R' },
+    challenge: true
+}), (req, res) => {
+		res.sendFile("index.html", {root: __dirname+"/static"});
 });
 
 io.on('connection', socket => {
@@ -33,11 +38,11 @@ io.on('connection', socket => {
     app.post('/exile', function (req, res) {
       fingerprint = req.body.fingerprint;
       
-      if (exile.check(fingerprint) == "banned") {
-	res.status(403).send();
-      }else{
-	res.status(200).send();
-      }
+    if (exile.check(fingerprint) == "banned") {
+		res.status(403).send();
+    }else{
+		res.status(200).send();
+    }
       
       Log(`${fingerprint} connected`, LogLevel.info);
     });
@@ -45,7 +50,7 @@ io.on('connection', socket => {
     socket.on('start', data => {
 	var ship = new Ship(socket.id);
 	game.players[socket.id] = ship;
-        game.players[socket.id].username = data.name;
+    game.players[socket.id].username = data.name;
 	game.players[socket.id].fingerprint = fingerprint;
 	
 	if (data.location.replace(/^.*[\\\/]/, '') == "dev") {
