@@ -6,6 +6,6 @@
 5. navigate to [localhost:8000](https://localhost:8000) to view the game and play. Try joining with different tabs
 
 # TODO
-1. Make background grid "move" with player
-2. Make movement faster
-3. use player.end to make it so players cannot be in idle positions
+1. Make player movement faster (at 3 now, maybe to 8?)
+2. use player.end so that player is never in idle position (always moving in last direction pressed)
+3. Make array of collisionPoints and one for playerPoints containing the trails in the game, and the trails left by the player, respectively. This way we can render them in separate colors.
