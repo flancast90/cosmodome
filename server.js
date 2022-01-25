@@ -61,7 +61,7 @@ io.on('connection', socket => {
     });
 
     socket.on('disconnect', () => {
-        game.players[socket.id] = undefined;
+        delete game.players[socket.id];
         Log(`${socket.id} disconnected`, LogLevel.info);
     });
 });
@@ -75,10 +75,18 @@ setInterval(() => {
   for (const key in game.players) {
     if (Object.hasOwnProperty.call(game.players, key) && game.players[key]) {
       
-      if (game.players[key].keys['w']) game.players[key].end.y += 3;
-      if (game.players[key].keys['s']) game.players[key].end.y -= 3;
-      if (game.players[key].keys['a']) game.players[key].end.x += 3;
-      if (game.players[key].keys['d']) game.players[key].end.x -= 3;
+      if (game.players[key].keys['w']) {
+      	game.players[key].end.y = game.players[key].pos.y + 3;
+      }
+      if (game.players[key].keys['s']) {
+      	game.players[key].end.y = game.players[key].pos.y - 3;
+      }
+      if (game.players[key].keys['a']) {
+      	game.players[key].end.x = game.players[key].pos.x + 3;
+      }
+      if (game.players[key].keys['d']) {
+      	game.players[key].end.x = game.players[key].pos.x - 3;
+      }
 
       game.players[key].pos.x += (game.players[key].end.x - game.players[key].pos.x) * 0.2;
       game.players[key].pos.y += (game.players[key].end.y - game.players[key].pos.y) * 0.2;
