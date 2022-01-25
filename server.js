@@ -21,6 +21,11 @@ game = {
 const BUILDPATH = path.join(__dirname, "static");
 app.use(express.static(BUILDPATH));
 
+// set dev to true on developer page
+app.get('/dev', (req, res) => {
+  res.sendFile('static/index.html', {root: __dirname});
+});
+
 io.on('connection', socket => {
   
     // uses exile-js library to determine if user is
@@ -35,11 +40,6 @@ io.on('connection', socket => {
       }
       
       Log(`${fingerprint} connected`, LogLevel.info);
-    });
-    
-    // set dev to true on developer page
-    app.get('/dev', (req, res) => {
-      res.sendFile('static/index.html', {root: __dirname});
     });
 
     socket.on('start', data => {
