@@ -37,9 +37,7 @@ app.get('/admin', basicAuth({
 		res.sendFile("index.html", {root: __dirname+"/static"});
 });
 
-io.on('connection', socket => {
-  
-    // uses exile-js library to determine if user is
+// uses exile-js library to determine if user is
     // banned or not
     app.post('/exile', function (req, res) {
       fingerprint = req.body.fingerprint;
@@ -49,9 +47,12 @@ io.on('connection', socket => {
     }else{
 		res.status(200).send();
     }
-      
-      Log(`${fingerprint} connected`, LogLevel.info);
-    });
+     
+    Log(`${fingerprint} connected`, LogLevel.info);
+});
+    
+
+io.on('connection', socket => {
 
     socket.on('start', data => {
 	var ship = new Ship(socket.id);
