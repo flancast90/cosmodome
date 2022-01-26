@@ -19,6 +19,8 @@ game = {
     players: {}
 };
 
+var wallstate = {};
+
 const BUILDPATH = path.join(__dirname, "static");
 app.use(express.static(BUILDPATH));
 
@@ -60,14 +62,14 @@ io.on('connection', socket => {
     game.players[socket.id].username = data.name;
 	game.players[socket.id].fingerprint = fingerprint;
 	
-	if (data.location.replace(/^.*[\\\/]/, '') == "dev") {
+	if (socket.request.headers.referer.replace(/^.*[\\\/]/, '') == "dev") {
 	  game.players[socket.id].isDev = true
 	} else {
 	  game.players[socket.id].isDev = false
 	}
 	
        
-    if (data.location.replace(/^.*[\\\/]/, '') == "admin") {
+    if (socket.request.headers.referer.replace(/^.*[\\\/]/, '') == "admin") {
 	  game.players[socket.id].isAdmin = true
 	} else {
 	  game.players[socket.id].isAdmin = false
@@ -131,11 +133,14 @@ io.on('connection', socket => {
 	Log(`${socket.id} disconnected.`);
       }
       
+      // remove player's walls on disconnect
+      if (wallstate[socket.id]) {
+      	delete wallstate[socket.id];
+      }
       delete game.players[socket.id];
     });
 });
 
-var wallstate = {};
 setInterval(() => {
   const d = new Date();
   var currentTime = d.getTime();
@@ -172,8 +177,8 @@ setInterval(() => {
       	game.players[key].pos.r = 0
       }
 
-      game.players[key].pos.x += (game.players[key].end.x - game.players[key].pos.x) * 0.2;
-      game.players[key].pos.y += (game.players[key].end.y - game.players[key].pos.y) * 0.2;
+      game.players[key].pos.x += (parseInt(game.players[key].end.x) - game.players[key].pos.x) * 0.2;
+      game.players[key].pos.y += (parseInt(game.players[key].end.y) - game.players[key].pos.y) * 0.2;
       
       // time alive in seconds
       timeAlive = (parseInt(currentTime) - parseInt(game.players[key].time))/1000;	
@@ -191,6 +196,7 @@ setInterval(() => {
       	  var length = wallstate[key].coords.length;
       	  
       	  for (var i=0; i<length; i++) {
+      	  	  
       	  	  try {
       	  	  	  var score = wallstate[key].coords[i][3]
       	  	  	  var duration = 3000;
@@ -220,8 +226,9 @@ setInterval(() => {
       	      	  if ((d.getTime()-wallstate[key].coords[i][2]) >= duration) {
       	          	  wallstate[key].coords.pop(i);
       	      	  }
+      	      	 
       	  	  } catch(e) {
-      	  	  	  wallstate[key].coords.pop(i);
+      	  	      wallstate[key].coords.pop(i);
       	  	  }
       	  }
       	  
@@ -238,8 +245,27 @@ setInterval(() => {
   	if (player != null) {
   		state.push(game.players[player])
   	}
+  	
+  	for (var placers in wallstate) {
+    	var len = wallstate[placers].coords.length;
+		for (var j=0; j<len; j++) {
+			// define hitboxes
+  			if ((game.players[player].pos.x-45 < wallstate[placers].coords[j][0]) 
+    			&& (wallstate[placers].coords[j][0] < game.players[player].pos.x+45)) {
+    			if ((game.players[player].pos.y-45 < wallstate[placers].coords[j][1])
+      				&& (wallstate[placers].coords[j][1] < game.players[player].pos.y+45)) {
+      				if (placers != player) {
+      	  	  			io.to(player).emit("death", game.players[player].score)
+    	  	  	  		  
+      	  	  			delete wallstate[player];
+      	  	  			delete game.players[player];
+      	    		}
+        		}
+     		}
+		}
+	 }
   }
-
+  
   io.sockets.emit('state', {leaderboard, wallstate, state});
 }, 50);
 
