@@ -78,6 +78,23 @@ function ship3(r) {
     }
 }
 
+// for sending keys to server
+function keydown(e) {
+	if (chatting) { 
+   		// do nothing
+   	} else {
+   		socket.emit('keydown', e.key) 
+   	}
+}
+	
+function keyup(e) {
+	if (chatting) {
+		// do nothing
+	} else {
+		socket.emit('keyup', e.key)
+	}
+}
+	
 socket.on('join', data => {
    	state = data.state;
    	ship = data.ship;
@@ -90,20 +107,8 @@ socket.on('join', data => {
    	chatinput.addEventListener('focusin', function() {chatting=true});
    	chatinput.addEventListener('focusout', function() {chatting=false});
    	
-   	addEventListener('keydown', function(e) {
-   		if (chatting) { 
-   			// do nothing
-   		} else {
-   			socket.emit('keydown', e.key) 
-   		}
-   	});
-	addEventListener('keyup', function(e) {
-		if (chatting) {
-			// do nothing
-		} else {
-			socket.emit('keyup', e.key)
-		}
-	});
+   	document.addEventListener('keydown', keydown);
+   	document.addEventListener('keyup', keyup);
 	
 	// show chat elements
 	document.getElementById('chat').style.display = "block";
@@ -365,4 +370,19 @@ socket.on("chat", data => {
 	
 	document.getElementById('chat').innerText += author+"> "+msg;
 	document.getElementById('chat').innerHTML += "<br>";
+});
+
+socket.on('disconnect', function(){
+	location.reload();
+});
+
+socket.on("death", score => {
+	document.getElementById('chat').style.display = "none";
+	document.getElementById('chatinput').style.display = "none";
+	document.getElementById('leaderboard').style.display = "none";
+	document.getElementById('death').style.display = "block";
+	document.getElementById('dead_score').innerText = "Your Score: "+score;
+	
+	document.removeEventListener('keyup', keyup);
+	document.removeEventListener('keydown', keydown);
 });

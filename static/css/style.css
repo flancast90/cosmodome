@@ -39,6 +39,22 @@ body {
 	text-align: center;
 }
 
+.death {
+	text-shadow: 0 0 0.20833333vh #fe9300, 0 0 0.41666667vh #fe9300, 0 0 1.25vh #fe9300, 0 0 2.5vh #fe9300;
+	color: orange;
+	text-align: center;
+}
+.respawn {
+	box-shadow: 0 0 0.20833333vh #fe9300, 0 0 0.41666667vh #fe9300, 0 0 1.25vh #fe9300, 0 0 2.5vh #fe9300;
+	border: orange;
+	outline: none;
+	background: transparent;
+	padding: 15px;
+	cursor: pointer;
+	font-size: 1em;
+	border-radius: 10px;
+}
+
 .neon {
 	text-shadow: 0 0 0.25vh #2ec4ff, 0 0 0.5vh #2ec4ff, 0 0 1.5vh #2ec4ff, 0 0 3vh #2ec4ff;
 	color: lightblue;
@@ -58,6 +74,7 @@ body {
 }
 
 .box {
+	text-align: center;
 	position: absolute;
 	font-size: 2em;
 	top: 50%; right: 50%;
