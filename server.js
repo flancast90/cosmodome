@@ -52,6 +52,14 @@ app.get('/admin', basicAuth({
      
     Log(`${fingerprint} connected`, LogLevel.info);
 });
+
+function getScore(timeAlive) {
+	var d = new Date();
+	var currentTime = d.getTime();
+	
+	var score = ((parseInt(currentTime) - parseInt(timeAlive))/1000)*100;
+	return score
+}
     
 
 io.on('connection', socket => {
@@ -81,17 +89,21 @@ io.on('connection', socket => {
         socket.emit('join', { ship, state: Object.keys(game.players).map(key => game.players[key]) });
     });
 
-    socket.on('keydown', key => {
-      if (key == "w" || key == "a" || key == "s" || key == "d") {
-      	game.players[socket.id].keys[key] = true;
-      }
-    });
+	try {
+    	socket.on('keydown', key => {
+      		if (key == "w" || key == "a" || key == "s" || key == "d") {
+      			game.players[socket.id].keys[key] = true;
+      		}
+    	});
 
-    socket.on('keyup', key => {
-      if (key == "w" || key == "a" || key == "s" || key == "d") {
-      	game.players[socket.id].keys[key] = false;
-      }
-    });
+    	socket.on('keyup', key => {
+      		if (key == "w" || key == "a" || key == "s" || key == "d") {
+      			game.players[socket.id].keys[key] = false;
+      		}
+    	});
+    } catch {
+    	// do nothing
+    }
     
     socket.on('chat', msg => {
       try {
@@ -181,10 +193,10 @@ setInterval(() => {
       game.players[key].pos.y += (parseInt(game.players[key].end.y) - game.players[key].pos.y) * 0.2;
       
       // time alive in seconds
-      timeAlive = (parseInt(currentTime) - parseInt(game.players[key].time))/1000;	
+      var score = getScore(game.players[key].time);
       var username = game.players[key].username
 	  
-      leaderboard[username] = {score: (timeAlive*100)};
+      leaderboard[username] = {score: score};
       leaderboard[username].id = key
       
       if (!wallstate.hasOwnProperty(key)) {
@@ -250,19 +262,24 @@ setInterval(() => {
     	var len = wallstate[placers].coords.length;
 		for (var j=0; j<len; j++) {
 			// define hitboxes
-  			if ((game.players[player].pos.x-45 < wallstate[placers].coords[j][0]) 
-    			&& (wallstate[placers].coords[j][0] < game.players[player].pos.x+45)) {
-    			if ((game.players[player].pos.y-45 < wallstate[placers].coords[j][1])
-      				&& (wallstate[placers].coords[j][1] < game.players[player].pos.y+45)) {
-      				if (placers != player) {
-      	  	  			io.to(player).emit("death", game.players[player].score)
+			try {
+  				if ((game.players[player].pos.x-45 < wallstate[placers].coords[j][0]) 
+    				&& (wallstate[placers].coords[j][0] < game.players[player].pos.x+45)) {
+    				if ((game.players[player].pos.y-45 < wallstate[placers].coords[j][1])
+      					& (wallstate[placers].coords[j][1] < game.players[player].pos.y+45)) {
+      					if (placers != player) {
+      						var score = getScore(game.players[player].time);
+      	  	  				io.to(player).emit("death", score);
     	  	  	  		  
-      	  	  			delete wallstate[player];
-      	  	  			delete game.players[player];
-      	    		}
-        		}
-     		}
-		}
+      	  	  				delete wallstate[player];
+      	  	  				delete game.players[player];
+      	    			}
+        			}
+     			}
+			} catch {
+			
+			}	
+	 	}
 	 }
   }
   
