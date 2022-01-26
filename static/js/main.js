@@ -397,7 +397,7 @@ socket.on("death", score => {
 	document.getElementById('chatinput').style.display = "none";
 	document.getElementById('leaderboard').style.display = "none";
 	document.getElementById('death').style.display = "block";
-	document.getElementById('dead_score').innerText = "Your Score: "+score;
+	document.getElementById('dead_score').innerText = "Your Score: "+parseInt(score);
 });
 
 function respawn() {

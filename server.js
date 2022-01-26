@@ -12,6 +12,8 @@ const exile = require('./backend/exile');
 const { Ship } = require('./backend/models');
 const { Log, LogLevel } = require('./backend/utils');
 
+try {
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -92,13 +94,22 @@ io.on('connection', socket => {
 	try {
     	socket.on('keydown', key => {
       		if (key == "w" || key == "a" || key == "s" || key == "d") {
-      			game.players[socket.id].keys[key] = true;
+      			// catch bug where players holding WSAD would crash server
+      			try {
+      				game.players[socket.id].keys[key] = true;
+      			} catch (e) {
+      				// pass
+      			}
       		}
     	});
 
     	socket.on('keyup', key => {
       		if (key == "w" || key == "a" || key == "s" || key == "d") {
-      			game.players[socket.id].keys[key] = false;
+      			try {
+      				game.players[socket.id].keys[key] = false;
+      			} catch {
+      				//pass
+      			}
       		}
     	});
     } catch {
@@ -290,3 +301,7 @@ setInterval(() => {
 server.listen(8000, () => {
   console.log('🚀 Client Running on: http://localhost:8000');
 });
+
+} catch(e) {
+	console.log(e);
+}	
