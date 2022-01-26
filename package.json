@@ -2,6 +2,7 @@
   "dependencies": {
     "body-parser": "^1.19.1",
     "express": "^4.17.2",
+    "express-basic-auth": "^1.2.1",
     "nodemon": "^2.0.15",
     "socket.io": "^4.4.1"
   },

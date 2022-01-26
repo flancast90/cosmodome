@@ -20,6 +20,10 @@ const ships = [
 	ship3
 ];
 
+var discordModal = nanoModal(document.querySelector("#discord"), {buttons: []});
+discordModal.show();
+
+
 // ship handlers
 function ship1(r) {
 	if (r == "right") {
