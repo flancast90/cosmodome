@@ -217,22 +217,36 @@ var drawBoard = function(w, h) {
 	ctx.beginPath();
 	
     for (x = 0; x <= w; x += 50) {
-        // draw vertical lines after pos.x
-        ctx.moveTo(x+ship.pos.x, 0);
-        ctx.lineTo(x+ship.pos.x, h);
+    	if ((ship.pos.x-(canvas.width/2) >= 0) && ((ship.pos.x-(canvas.width/2)) <= 2000)) {
+        	// draw vertical lines after pos.x
+        	ctx.moveTo(x+ship.pos.x, 0);
+        	ctx.lineTo(x+ship.pos.x, h);
         
-        // draw vertical lines before pos.x
-        ctx.moveTo(ship.pos.x-x, 0);
-        ctx.lineTo(ship.pos.x-x, h);
+        	// draw vertical lines before pos.x
+        	ctx.moveTo(ship.pos.x-x, 0);
+        	ctx.lineTo(ship.pos.x-x, h);
+        } else if (ship.pos.x-(canvas.width/2) <= 0) {
+        	// draw vertical lines before pos.x
+        	ctx.moveTo((ship.pos.x-x)+canvas.width/2, 0);
+        	ctx.lineTo((ship.pos.x-x)+canvas.width/2, h);
+        }
         
         for (y = 0; y <= h; y += 50) {
-            // draw horizontal lines after pos.y
-            ctx.moveTo(0, y+ship.pos.y);
-            ctx.lineTo(w, y+ship.pos.y);
+        	if ((ship.pos.y-(canvas.height/2) >= 0)) {
+            	// draw horizontal lines after pos.y
+            	ctx.moveTo(0, y+ship.pos.y);
+            	ctx.lineTo(w, y+ship.pos.y);
             
-            // draw horizontal lines before pos.y
-            ctx.moveTo(0, ship.pos.y-y);
-            ctx.lineTo(w, ship.pos.y-y);
+            	// draw horizontal lines before pos.y
+            	ctx.moveTo(0, ship.pos.y-y);
+            	ctx.lineTo(w, ship.pos.y-y);
+            } else if (ship.pos.y-(canvas.height/2) <= 0) {
+        		// draw horizontal lines before pos.y
+            	ctx.moveTo(0, (ship.pos.y-y)+canvas.height/2);
+            	ctx.lineTo(w, (ship.pos.y-y)+canvas.height/2);
+        	}
+        	
+        	
         }
     }
     ctx.strokeStyle = "white";
@@ -294,14 +308,14 @@ function update() {
 	var chat = document.getElementById("chat");
 	chat.scrollTop = chat.scrollHeight;
 
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     if (!state || !ship) {
         return;
     }
 
-	drawBoard(innerWidth, innerHeight);
+	drawBoard(window.innerWidth, window.innerHeight);
     ctx.translate((innerWidth - shipWidth) / 2, (innerHeight - shipWidth) / 2);
     ctx.save();
     
@@ -382,7 +396,11 @@ socket.on("chat", data => {
 	var msg = data.msg;
 	
 	document.getElementById('chat').innerText += author+"> "+msg;
-	document.getElementById('chat').innerHTML += "<br>";
+	document.getElementById('chat').innerHTML += "<br><br>";
+});
+
+socket.on('kick', function(){
+	location.reload();
 });
 
 socket.on('disconnect', function(){
@@ -402,4 +420,5 @@ socket.on("death", score => {
 
 function respawn() {
 	renderGame_Fields(name);
+	document.getElementById('chat').innerHTML = "";
 }

@@ -24,7 +24,7 @@
 	
 	<div class="neon chat" id="chat" style="display:none;"></div>
 	<form id="chatForm" autocomplete="off">
-		<input class="neon chatinput" id="chatinput" type="text" placeholder="Chat Here..." style="display: none;"/>
+		<input class="neon chatinput" id="chatinput" type="text" minlength="2" required placeholder="Chat Here..." style="display: none;"/>
 	</form>
 	
 	<table class="neon leaderboard" id="leaderboard"></table>
@@ -55,7 +55,7 @@
 			<p style="width:100%; font-family:Courier New;" class="neon title" id="title">COSMONOT</p>
         	<form href="#" id="form-foo" style="position: fixed;" onsubmit="renderGame_Fields(document.getElementById('name_entry').value); return false;">
         		<div class="box respawn">
-        			<input type="text" class="neon unameinput" id="name_entry" placeholder="username"/><br><br>
+        			<input type="text" class="neon unameinput" id="name_entry" placeholder="username" maxlength="10" required/><br><br>
         			<button class="neon" id="btn_main" style="cursor:pointer; background-color:transparent; border:none; outline:none;" type="button" onclick="renderGame_Fields(document.getElementById('name_entry').value);">
             			<h1 style="font-size:3em;">Start Game</h1>
         			</button>
