@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cosmonot.io - An Arcade Space Strategy Game</title>
+    <title>Cosmodo.me - An Arcade Space Strategy Game</title>
 
     <link rel="stylesheet" href="css/style.css">
     
@@ -22,15 +22,49 @@
 	    <h2 style="display:inline; float:right;" class="neon" id="score">Score:</h2>
 	</div>
 	
+	<div class="upgrade-container" id="upgrades1">
+		<div class="upgrade respawn">
+			<p class="neon">+ Trail Length</p>
+		</div>
+		<div class="upgrade respawn">
+			<p class="neon"> ?? </p>
+		</div>
+		<div class="upgrade respawn">
+			<p class="neon"> ?? </p>
+		</div>
+	</div>
+	<div class="upgrade-container" id="upgrades2">
+		<div class="upgrade respawn">
+			<p class="neon">Speed Boost</p>
+		</div>
+		<div class="upgrade respawn">
+			<p class="neon"> ?? </p>
+		</div>
+		<div class="upgrade respawn">
+			<p class="neon"> ?? </p>
+		</div>
+	</div>
+	<div class="upgrade-container" id="upgrades3">
+		<div class="upgrade respawn">
+			<p class="neon"> Invisibility </p>
+		</div>
+		<div class="upgrade respawn">
+			<p class="neon"> Shield </p>
+		</div>
+		<div class="upgrade respawn">
+			<p class="neon"> ?? </p>
+		</div>
+	</div>
+	
 	<div class="neon chat" id="chat" style="display:none;"></div>
 	<form id="chatForm" autocomplete="off">
-		<input class="neon chatinput" id="chatinput" type="text" minlength="2" required placeholder="Chat Here..." style="display: none;"/>
+		<input class="neon chatinput" id="chatinput" type="text" placeholder="Chat Here..." style="display: none;"/>
 	</form>
 	
 	<table class="neon leaderboard" id="leaderboard"></table>
 	
 	<div id="discord" style="" class="respawn">
-		<h1 class="neon">Want to Become a Larger Part of the Cosmonot Community? Join us on Discord! </h1>
+		<h1 class="neon">Want to Become a Larger Part of the Cosmodome Community? Join us on Discord! </h1>
 		<br>
 		<center>
 			<a href="https://discord.gg/RmnMANVVDn"><img style="width: 75%;" src="images/discord.png"/></a>
@@ -52,10 +86,10 @@
 	
     <div class="ui" id="ui">
 		<center>
-			<p style="width:100%; font-family:Courier New;" class="neon title" id="title">COSMONOT</p>
+			<p style="width:100%; font-family:Courier New;" class="neon title" id="title">COSMODOME</p>
         	<form href="#" id="form-foo" style="position: fixed;" onsubmit="renderGame_Fields(document.getElementById('name_entry').value); return false;">
         		<div class="box respawn">
-        			<input type="text" class="neon unameinput" id="name_entry" placeholder="username" maxlength="10" required/><br><br>
+        			<input type="text" class="neon unameinput" id="name_entry" placeholder="username"/><br><br>
         			<button class="neon" id="btn_main" style="cursor:pointer; background-color:transparent; border:none; outline:none;" type="button" onclick="renderGame_Fields(document.getElementById('name_entry').value);">
             			<h1 style="font-size:3em;">Start Game</h1>
         			</button>

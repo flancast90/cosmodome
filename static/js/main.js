@@ -2,7 +2,7 @@ var shipWidth = Math.min(innerWidth, innerHeight) / 15;
 
 // querySelector no longer works since browser fingerprinting
 // adds another canvas to the page onload
-const canvas = document.getElementById('gameboard');
+const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
 var state = null;
@@ -93,6 +93,13 @@ function keydown(e) {
 }
 	
 function keyup(e) {
+    if (e.key == "Enter") {
+        if (chatting) {
+            document.getElementById('chatinput').blur();
+        } else {
+            document.getElementById('chatinput').focus();
+        }
+    }
 	if (chatting) {
 		// do nothing
 	} else {
@@ -123,7 +130,7 @@ socket.on('join', data => {
    	socket.on('state', data => {
    		state = data.state;
    		leaderboard = data.leaderboard;
-   		wallstate = data.wallstate;
+
    		var top5 = []
    		var top5_names = []
    		var temp = null;
@@ -132,13 +139,13 @@ socket.on('join', data => {
    		
    		// add all player scores to the leaderboard variable
    		for (var player in leaderboard) {
-   			var name = player.substring(0, 10);
+   			var name = leaderboard[player].username.substring(0, 10);
     		var score = parseInt(leaderboard[player].score);
     		
     		top5.push(score)
     		top5_names.push(name)
     		
-    		if (leaderboard[player].id == ship.id) {
+    		if (player == ship.id) {
    				document.getElementById('score').innerHTML = "Score: "+score;
    			}
    			
@@ -168,12 +175,14 @@ socket.on('join', data => {
 				var username = top5_names[i]
 				var iter = 0
 				
-				for (let player in state) {
-					if (username == state[player].username) {
-						if (state[player].isDev) {
+				for (let player in leaderboard) {
+					if (player == state[player].username) {
+						if (state[player].Perms.Dev) {
 							colors.push("purple");
-						} else if (state[player].isAdmin) {
+						} else if (state[player].Perms.Admin) {
 							colors.push("green");
+						} else if (state[player].Perms.Tester) {
+							colors.push("yellow");
 						} else {
 							colors.push("auto");
 						}
@@ -249,7 +258,7 @@ var drawBoard = function(w, h) {
         	
         }
     }
-    ctx.strokeStyle = "white";
+    ctx.strokeStyle = "gray";
     ctx.stroke();
     
     ctx.closePath();
@@ -267,14 +276,14 @@ function renderGame_Fields(playerName) {
 		return
 	}
 	
-	name = playerName;
+	username = playerName;
 	var ui = document.getElementById('ui');
 	ui.style.display = "none";
 	
 	document.getElementById('leaderboard').style.display = "block";
 	document.getElementById('death').style.display = "none";
 	
-	socket.emit('start', {name, location: window.location.href});
+	socket.emit('start', { username, fingerprint });
 }
 
 /*
@@ -416,6 +425,16 @@ socket.on("death", score => {
 	document.getElementById('leaderboard').style.display = "none";
 	document.getElementById('death').style.display = "block";
 	document.getElementById('dead_score').innerText = "Your Score: "+parseInt(score);
+});
+
+socket.on("upgrades1", () => {
+	document.getElementById("upgrades1").style.display = "block";
+});
+socket.on("upgrades2", () => {
+	document.getElementById("upgrades2").style.display = "block";
+});
+socket.on("upgrades3", () => {
+	document.getElementById("upgrades3").style.display = "block";
 });
 
 function respawn() {
