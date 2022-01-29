@@ -374,4 +374,8 @@ body.playing .score-field {
   text-shadow: 0 0 0.2vh #2ec4ff, 0 0 0.4vh #2ec4ff, 0 0 1.2vh #2ec4ff, 0 0 2.4vh #2ec4ff;
 }
 
+.lb-score {
+    float: right;
+}
+
 /*# sourceMappingURL=style.css.map */

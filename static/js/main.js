@@ -144,7 +144,7 @@ socket.on('join', data => {
         // add all player scores to the leaderboard variable
         for (var player in leaderboard) {
             var name = state[player].username.substring(0, 10);
-            var score = parseInt(leaderboard[player].score);
+            var score = parseInt(state[player].score);
 
             top5.push(score)
             top5_names.push(name);
@@ -185,6 +185,8 @@ socket.on('join', data => {
                 }
                 
                 document.getElementsByClassName("lb-player")[i].innerText = username;
+                document.getElementsByClassName("lb-score")[i].innerText = top5[i];
+
                 document.getElementsByClassName("lb-player")[i].style.color = colors[i];
                
 
@@ -422,6 +424,7 @@ socket.on("death", score => {
     document.getElementById('dead_score').innerText = "Your Score: " + parseInt(score);
 });
 
+/* only active on tester server
 socket.on("upgrades1", function() {
     document.querySelector('#upgrades1').style.display = 'block';
 });
@@ -433,7 +436,7 @@ socket.on("upgrades2", () => {
 socket.on("upgrades3", () => {
     document.querySelector('#urgrades3').style.display = 'block';
 });
-
+*/
 
 function respawn() {
     renderGame_Fields(name);

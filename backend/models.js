@@ -8,7 +8,7 @@ class Ship {
         this.username = "Unknown";
         this.ship = Math.round(Math.random() * 2);
         this.joinedAt = Date.now();
-        this.score = 14900;
+        this.score = 100;
 
         var x = Math.floor(Math.random() * 3000);
         var y = Math.floor(Math.random() * 3000);
