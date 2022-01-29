@@ -144,6 +144,19 @@ body {
 	outline: none;
 }
 
+.upgrade-container {
+	display: none;
+	position: fixed;
+	right: 50%;
+	top:20%;
+	transform: translate(50%,-50%);
+	text-align: center;
+}
+.upgrade {
+	display: inline-block;
+	font-size: 1.1em;
+}
+
 .unameinput {
 	border: 3px solid lightblue;
 	color: lightblue;

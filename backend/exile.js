@@ -19,96 +19,41 @@
 */
 
 /*
+ * EDITED BY ziemniakbiznesu FOR PROJECT NEEDS. 
+*/
+
+
+
+/*
  * dependencies are all native, and are declared here for easy reference. In case they 
  * are not already installed, the user can just `npm install [dependency]`
 */
-const readline = require('readline');
 const fs = require('fs');
 
-/*
- * here we retrieve the users who are banned, and keep them as an array
- * for this session.
-*/
+var listFileName = 'blacklist.txt';
+var blacklist = fs.readFileSync(listFileName, 'utf8').split('\n')
 
-// global variable (all lonely and sad)
-var blacklist = fs.readFileSync('blacklist.txt', 'utf8').split('\n')
-
-/*
- * Initialise code for module. Our library will accept the arguments:
- * exile.check(userid, callback), exile.ban(userid), exile.unban(userid)
-*/
 module.exports = {
-    /*
-     * start exile.check function, taking userid as param. We will simply check and
-     * see if the userid existed in the blacklist.txt file, and if so, we return 
-     * that they are banned.
-    */
-    check: function(userid) {
-        if (blacklist.includes(userid)){
-            return "banned";
-        }else{
-            return "normal";
-        }
+    check: id => {
+        return blacklist.includes(id)
     },
 
-    /*
-     * start exile.ban function. Here we will use the userid to check if the id is already
-     * banned, and if so return an error.
-    */
-    ban: function(userid) {
-        if (blacklist.includes(userid)) {
-            return userid+" is already blacklisted.";
-        }else {
-            /* 
-             * If the user is not already banned, we will add their id to the file of
-             * other banned ids.
-            */
-            blacklist.push(userid);
-            
-            fs.appendFile("blacklist.txt",userid+"\n", (err) => {
-                /*
-                 * This should never catch anything if the user has installed correctly,
-                 * but it is best practice to check to avoid messy errors. Basically, 
-                 * the file must exist before we can write to it.
-                */
-                if (err) {
-                    return "Error.";
-                }
-                
-            });
-            
-            return "Banned "+userid;
+    ban: id => {
+        if (this.check(id)) {
+            return;
         }
+
+        blacklist.push(id);
+        fs.appendFile(listFileName, `${id}\n`, err => console.error(err));
     },
 
-    /*
-     * The exile.unban funtion will simply remove the users id from the blacklist.txt file,
-     * thus "unbanning" them.
-    */
-    unban: function(userid) {
-        /*
-         * error message in case the user is not already banned, since someone banned cannot
-         * be unbanned. By giving them the link to github, maybe they will star :)
-        */
-        if (blacklist.indexOf(userid) == -1) {
-			return userid+" is not banned."
-        } else {
-            /*
-             * remove the userid completely from the file. Although we technically do not
-             * need the RegExp expression, it is best to make sure there is only
-             * one instance of the userid in the file, just in case a user tried to
-             * experiment without the checks the program has.
-            */
-            var data = fs.readFileSync('blacklist.txt', 'utf-8');
-
-            var newContent = data.replace(new RegExp(userid+"\n"), '');
-            fs.writeFileSync('blacklist.txt', newContent, 'utf-8');
-
-            /*
-             * again, we just let the user know everything has successfully completed.
-            */
-            blacklist.pop(blacklist.indexOf(userid))
-            return "Unbanned.";
+    unban: id => {
+        if (blacklist.indexOf(id) == -1) {
+            return;
         }
+
+        var content = fs.readFileSync(listFileName, 'utf-8').replace(new RegExp(`${id}\n`), '');
+        fs.writeFileSync(listFileName);
+        blacklist.pop(blacklist.indexOf(id));
     }
 }
