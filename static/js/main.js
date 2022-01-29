@@ -1,3 +1,13 @@
+addEventListener('keydown', e => {
+    if (e.key == "ArrowLeft") {
+        document.querySelector('.page-left').classList.toggle('active');
+    }
+
+    if (e.key == "ArrowRight") {
+        document.querySelector('.page-right').classList.toggle('active');
+    }
+});
+
 var shipWidth = Math.min(innerWidth, innerHeight) / 15;
 
 // querySelector no longer works since browser fingerprinting
@@ -28,57 +38,57 @@ discordModal.show();
 function ship1(r) {
     if (r == "right") {
         var img = new Image();
-        img.src = `images/ships/0.svg`;
+        img.src = `images/ships/0;0.png`;
         return img;
     } else if (r == "left") {
         var img = new Image();
-        img.src = `images/ships/0-left.png`;
+        img.src = `images/ships/0;180.png`;
         return img;
     } else if (r == "up") {
         var img = new Image();
-        img.src = `images/ships/0-up.png`;
+        img.src = `images/ships/0;270.png`;
         return img;
     } else if (r == "down") {
         var img = new Image();
-        img.src = `images/ships/0-down.png`;
+        img.src = `images/ships/0;90.png`;
         return img;
     }
 }
 function ship2(r) {
     if (r == "right") {
         var img = new Image();
-        img.src = `images/ships/1.svg`;
+        img.src = `images/ships/1;0.png`;
         return img;
     } else if (r == "left") {
         var img = new Image();
-        img.src = `images/ships/1-left.png`;
+        img.src = `images/ships/1;180.png`;
         return img;
     } else if (r == "up") {
         var img = new Image();
-        img.src = `images/ships/1-up.png`;
+        img.src = `images/ships/1;270.png`;
         return img;
     } else if (r == "down") {
         var img = new Image();
-        img.src = `images/ships/1-down.png`;
+        img.src = `images/ships/1;90.png`;
         return img;
     }
 }
 function ship3(r) {
     if (r == "right") {
         var img = new Image();
-        img.src = `images/ships/2.svg`;
+        img.src = `images/ships/2;0.png`;
         return img;
     } else if (r == "left") {
         var img = new Image();
-        img.src = `images/ships/2-left.png`;
+        img.src = `images/ships/2;180.png`;
         return img;
     } else if (r == "up") {
         var img = new Image();
-        img.src = `images/ships/2-up.png`;
+        img.src = `images/ships/2;270.png`;
         return img;
     } else if (r == "down") {
         var img = new Image();
-        img.src = `images/ships/2-down.png`;
+        img.src = `images/ships/2;90.png`;
         return img;
     }
 }
@@ -122,10 +132,6 @@ socket.on('join', data => {
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);
 
-    // show chat elements
-    document.getElementById('chat').style.display = "block";
-    document.getElementById('chatinput').style.display = "block";
-
     // start listening for state updates now that game is started
     socket.on('state', data => {
         state = data.state;
@@ -135,19 +141,13 @@ socket.on('join', data => {
         var top5_names = []
         var temp = null;
 
-        document.getElementById('leaderboard').innerText = "";
-
         // add all player scores to the leaderboard variable
         for (var player in leaderboard) {
             var name = state[player].username.substring(0, 10);
             var score = parseInt(leaderboard[player].score);
 
             top5.push(score)
-            top5_names.push(name)
-
-            if (player == ship.id) {
-                document.getElementById('score').innerHTML = "Score: " + score;
-            }
+            top5_names.push(name);
 
         }
 
@@ -167,13 +167,10 @@ socket.on('join', data => {
             }
         }
 
-        document.getElementById('leaderboard').innerHTML = `<tr><th>Name:</th><th>Score:</th></tr>`;
-
         var colors = []
         for (var i = 0; i < 5; i++) {
             if (i < top5.length) {
                 var username = top5_names[i]
-                var iter = 0
 
                 for (let player in state) {
                     if (state[player].perms == 3) {
@@ -186,18 +183,10 @@ socket.on('join', data => {
                         colors.push("auto");    
                     }
                 }
-
-                // too lazy for using createElement
-                document.getElementById('leaderboard').innerHTML += `<tr id="pair"></tr>`;
-                document.getElementById('pair').innerHTML = `<td id="tops" style="color:` + colors[i] + `"></td>`;
-                document.getElementById('tops').innerText = top5_names[i]
-                document.getElementById('tops').id = '';
-
-                document.getElementById('pair').innerHTML += `<td id="tops"></td>`;
-                document.getElementById('tops').innerText = top5[i]
-                document.getElementById('tops').id = '';
-
-                document.getElementById('pair').id = '';
+                
+                document.getElementsByClassName("lb-player")[i].innerText = username;
+                document.getElementsByClassName("lb-player")[i].style.color = colors[i];
+               
 
             } else {
                 break;
@@ -312,9 +301,6 @@ function getRotation(r) {
  * takes no args, relying on data sent by server in mainloop
 */
 function update() {
-    var chat = document.getElementById("chat");
-    chat.scrollTop = chat.scrollHeight;
-
     canvas.width = innerWidth;
     canvas.height = innerHeight;
 
@@ -355,7 +341,7 @@ function update() {
 
         for (var i = 0; i < state[player].walls.length; i++) {
             // change color of player's line
-            if (player == socket.id) {
+            if (state[player].id == socket.id) {
                 ctx.strokeStyle = "rgba(0, 125, 255, 0.75)"
             } else {
                 ctx.strokeStyle = "rgba(255, 151, 0, 0.75)"
@@ -402,8 +388,23 @@ socket.on("chat", data => {
     var author = data.username;
     var msg = data.msg;
 
-    document.getElementById('chat').innerText += author + "> " + msg;
-    document.getElementById('chat').innerHTML += "<br>";
+    var msgContainer = document.querySelector('.messages-container');
+
+    var message = document.createElement('div');
+    message.classList.add('message');
+
+    var elAuthor = document.createElement('span');
+    elAuthor.classList.add('author');
+    elAuthor.innerText = author;
+
+    var elContent = document.createElement('p');
+    elContent.classList.add('message-content');
+    elContent.innerText = data.msg;
+
+    message.append(elAuthor);
+    message.append(elContent);
+    msgContainer.append(message);
+    
 });
 
 socket.on('disconnect', function() {
@@ -432,6 +433,7 @@ socket.on("upgrades2", () => {
 socket.on("upgrades3", () => {
     document.querySelector('#urgrades3').style.display = 'block';
 });
+
 
 function respawn() {
     renderGame_Fields(name);

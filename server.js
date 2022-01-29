@@ -89,7 +89,7 @@ io.on('connection', socket => {
 		var message = new Message(message, game.players[socket.id]);
 		
 		if (!message.tryExecute()) {
-			game.chat.push(message);
+			io.sockets.emit("chat", {username:game.players[socket.id].username, msg:message.content})
 		}
 	});
 

@@ -1,28 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cosmodo.me - An Arcade Space Strategy Game</title>
 
-    <link rel="stylesheet" href="css/style.css">
-    
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="js/main.js" defer></script>
-    <script src="js/client.js"></script>
-    <script src="js/nanomodal.min.js"></script>
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Cosmonot.io - An Arcade Space Strategy Game</title>
+
+	<link rel="stylesheet" href="css/style.css">
+
+	<script src="/socket.io/socket.io.js">
+
+	</script>
+	<script src="js/main.js" defer>
+
+	</script>
+	<script src="js/nanomodal.min.js">
+
+	</script>
 
 </head>
+
 <body>
 
-	<!-- although top-bar is part of UI, we want it to be visible all game -->
-	<div class="top-bar">
-		<h2 style="display:inline; float:left;" class="neon" id="top-score">Top-Score:</h2>
-	    <h2 style="display:inline; float:right;" class="neon" id="score">Score:</h2>
+
+	<div class="navbar">
+		<div>
+			<p class="neon">Top Score: <span class="top-score">0</span></p></div>
+  	<div class="score-field"><p class="neon">Score: <span class="score">0</span></p></div>
+  </div>
+
+  <div id="discord" class="respawn">
+		<h1 class="neon">Want to Become a Larger Part of the Cosmodome Community? Join us on Discord! </h1>
+		<br>
+		<center>
+			<a href="https://discord.gg/RmnMANVVDn"><img style="width: 75%;" src="images/discord.png"/></a>
+		</center>
 	</div>
 	
-	<div class="upgrade-container" id="upgrades1">
+	<div class="death" id="death" style="display: none;">
+		<p style="width:100%; font-family:Courier New;" class="death title" id="title">YOU DIED :(</p>
+		<div class="box">
+			<u id="dead_score" class="death">Your Score: </u>
+			
+			<br>
+			<br>
+			<br>
+			
+			<button class="death respawn" onclick="respawn()">Respawn</button>
+		</div>
+	</div>
+
+  <div class="upgrade-container" id="upgrades1">
 		<div class="upgrade respawn">
 			<p class="neon">+ Trail Length</p>
 		</div>
@@ -55,53 +84,46 @@
 			<p class="neon"> ?? </p>
 		</div>
 	</div>
-	
-	<div class="neon chat" id="chat" style="display:none;"></div>
-	<form id="chatForm" autocomplete="off">
-		<input class="neon chatinput" id="chatinput" type="text" placeholder="Chat Here..." style="display: none;"/>
-	</form>
-	
-	<table class="neon leaderboard" id="leaderboard"></table>
-	
-	<div id="discord" style="" class="respawn">
-		<h1 class="neon">Want to Become a Larger Part of the Cosmodome Community? Join us on Discord! </h1>
-		<br>
-		<center>
-			<a href="https://discord.gg/RmnMANVVDn"><img style="width: 75%;" src="images/discord.png"/></a>
-		</center>
-	</div>
-	
-	<div class="death" id="death" style="display: none;">
-		<p style="width:100%; font-family:Courier New;" class="death title" id="title">YOU DIED :(</p>
-		<div class="box">
-			<u id="dead_score" class="death">Your Score: </u>
-			
-			<br>
-			<br>
-			<br>
-			
-			<button class="death respawn" onclick="respawn()">Respawn</button>
-		</div>
-	</div>
-	
-    <div class="ui" id="ui">
-		<center>
-			<p style="width:100%; font-family:Courier New;" class="neon title" id="title">COSMODOME</p>
-        	<form href="#" id="form-foo" style="position: fixed;" onsubmit="renderGame_Fields(document.getElementById('name_entry').value); return false;">
-        		<div class="box respawn">
-        			<input type="text" class="neon unameinput" id="name_entry" placeholder="username"/><br><br>
-        			<button class="neon" id="btn_main" style="cursor:pointer; background-color:transparent; border:none; outline:none;" type="button" onclick="renderGame_Fields(document.getElementById('name_entry').value);">
-            			<h1 style="font-size:3em;">Start Game</h1>
-        			</button>
-        		</div>
-        
-        		<h2 class="neon cc" id="cc">© 2021 Finn Lancaster (flancast90)</h2>
-    		</form>
-    	</center>
-    </div>
     
-    <canvas id='fingerprint' style="display:none;" width='200' height='40' style='border:1px solid #000000;'></canvas>
-    <canvas id="gameboard"></canvas>
+  <div class="ui active" id="ui">
+    <p class="neon title">COSMONOT</p>
+    
+    <form id="join-form" class="respawn" onsubmit="renderGame_Fields(document.getElementById('username').value); return false;">
+    	<input type="text" id="username" class="username" placeholder="Your username...">
+    	<button type="submit" class="neon submit">Start game</button>
+    </form>
+  </div>
+  
+
+  <div class="chat page-left">
+  <div class="chat page-left active">
+    <div class="content">
+      <div class="chat" id="chat">
+        <form class="message-input" id="chatForm">
+            <input type="text" placeholder="Your message" id="chatinput">
+            <input type="submit" value="Send">
+        </form>
+        <div class="messages-container"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <canvas id="fingerprint"></canvas>
+  <canvas class="game" id="gameboard"></canvas>
+
+  <div class="settings page-right">
+    <div class="content">
+        <div class="leaderboard" id="leaderboard">
+            <p class="lb-title">Leaderboard</p>
+            <p class="lb-pos">1. <span class="lb-player"></span></p>
+            <p class="lb-pos">2. <span class="lb-player"></span></p>
+            <p class="lb-pos">3. <span class="lb-player"></span></p>
+            <p class="lb-pos">4. <span class="lb-player"></span></p>
+            <p class="lb-pos">5. <span class="lb-player"></span></p>
+        </div>
+    </div>
+  </div>
 
 </body>
 </html>
