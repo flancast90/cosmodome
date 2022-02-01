@@ -20,7 +20,7 @@ var ship = null;
 var wallstate = null;
 var timestamp = null;
 var chatting = false;
-var name = null
+var username = null
 
 var socket = io();
 
@@ -536,5 +536,5 @@ socket.on("upgrades3", () => {
 */
 
 function respawn() {
-    renderGame_Fields(name);
+    renderGame_Fields(username);
 }

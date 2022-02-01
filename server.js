@@ -62,9 +62,9 @@ io.on('connection', socket => {
         Log(`${req.body.fingerprint} connected`, LogLevel.info);
     });
 
-    var ship = new Ship(socket.id, fingerprint);
-
     socket.on('start', data => {
+        var ship = new Ship(socket.id, fingerprint);
+        
         game.addShip(ship);
         delete ship;
 
@@ -151,8 +151,10 @@ setInterval(() => {
                             if (user != game.playersArray[player]) {
                                 try { 
                                     var score = game.playersArray[player].score;
-                                    io.to(player).emit("death", score);
-                                } catch {}
+                                    io.to(game.playersArray[player].id).emit("death", score);
+                                } catch (e){
+                                    console.log(e);
+                                }
 
                                 try {
                                     user.score += 1000;
