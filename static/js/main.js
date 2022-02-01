@@ -221,44 +221,81 @@ socket.on('join', data => {
 });
 
 function clamp() {
-    var x = 0;
-    var y = 0;
-    var width = 0;
-    var height = 0
-
     if (ship.pos.x > 0) {
         // draw on left
         if (ship.pos.x >= 3000-(canvas.width/2)) {
-            width = (canvas.width/2) - (3000-ship.pos.x);
-            height = canvas.height;
+            var width = (canvas.width/2) - (3000-ship.pos.x);
+            var height = canvas.height;
 
+            var x = 0;
+            var y = 0;
+
+            ctx.beginPath();
+
+            ctx.globalCompositeOperation = "destination-over";
+
+            ctx.fillStyle = "#000"
+            ctx.rect(x, y, width, height);
+            ctx.fill();
+
+            ctx.closePath();
         } 
     } else {
         if (ship.pos.x <= -3000+(canvas.width/2)) {
-            width = (canvas.width/2) + (-3000-ship.pos.x);
-            height = canvas.height;
+            var width = (canvas.width/2) + (-3000-ship.pos.x);
+            var height = canvas.height;
 
-            x = (canvas.width)-width;
-            y = 0;
+            var x = (canvas.width)-width;
+            var y = 0;
+
+            ctx.beginPath();
+
+            ctx.globalCompositeOperation = "destination-over";
+
+            ctx.fillStyle = "#000"
+            ctx.rect(x, y, width, height);
+            ctx.fill();
+
+            ctx.closePath();
         }
     }
 
     if (ship.pos.y > 0) {
         // draw above
         if (ship.pos.y >= 3000-(canvas.height/2)) {
-            height = (canvas.height/2) - (3000-ship.pos.y);
-            width = canvas.width;
+            var height = (canvas.height/2) - (3000-ship.pos.y);
+            var width = canvas.width;
 
-            x = 0;
-            y = 0;
+            var x = 0;
+            var y = 0;
+
+            ctx.beginPath();
+
+            ctx.globalCompositeOperation = "destination-over";
+
+            ctx.fillStyle = "#000"
+            ctx.rect(x, y, width, height);
+            ctx.fill();
+
+            ctx.closePath();
         } 
     } else {
         if (ship.pos.y <= -3000+(canvas.height/2)) {
-            height = (canvas.height/2) + (-3000-ship.pos.y);
-            width = canvas.width;
+            var height = (canvas.height/2) + (-3000-ship.pos.y);
+            var width = canvas.width;
 
-            x = 0;
-            y = canvas.height-height;
+            var x = 0;
+            var y = canvas.height-height;
+
+            ctx.beginPath();
+
+            ctx.globalCompositeOperation = "destination-over";
+
+            ctx.fillStyle = "#000"
+            ctx.rect(x, y, width, height);
+            ctx.fill();
+
+            ctx.closePath();
         }
     }
 

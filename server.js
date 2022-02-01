@@ -148,11 +148,17 @@ setInterval(() => {
                 try {
                     if ((game.playersArray[player].pos.x - 45 < wall[0]) && (wall[0] < game.playersArray[player].pos.x + 45)) {
                         if ((game.playersArray[player].pos.y - 45 < wall[1]) && (wall[1] < game.playersArray[player].pos.y + 45)) {
-                            if (user != game.playersArray[player]) { 
-                                var score = game.playersArray[player].score;
-                                io.to(player).emit("death", score);
+                            if (user != game.playersArray[player]) {
+                                try { 
+                                    var score = game.playersArray[player].score;
+                                    io.to(player).emit("death", score);
+                                } catch {}
 
-                                user.score += 1000;
+                                try {
+                                    user.score += 1000;
+                                } catch {
+                                    
+                                }
 
                                 io.sockets.emit("chat", {
                                     username: "SYSTEM",
