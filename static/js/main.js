@@ -30,8 +30,15 @@ const ships = [
     ship3
 ];
 
+document.querySelector('#discord').style.display = 'block';
+
 var discordModal = nanoModal(document.querySelector("#discord"), { buttons: [] });
 discordModal.show();
+
+discordModal.onHide(function() {
+    document.querySelector('#how-to-play').style.display = 'block';
+    nanoModal(document.querySelector("#how-to-play"), { buttons: [] }).show();
+});
 
 
 // ship handlers
@@ -139,6 +146,7 @@ socket.on('join', data => {
 
         var top5 = []
         var top5_names = []
+        var top5_ids = []
         var temp = null;
 
         // add all player scores to the leaderboard variable
@@ -148,6 +156,7 @@ socket.on('join', data => {
 
             top5.push(score)
             top5_names.push(name);
+            top5_ids.push(state[player].perms);
 
         }
 
@@ -157,41 +166,45 @@ socket.on('join', data => {
                 if (top5[i] > top5[j]) {
                     var temp = top5[i]
                     var name_temp = top5_names[i]
+                    var id_temp = top5_ids[i]
 
                     top5[i] = top5[j]
                     top5_names[i] = top5_names[j]
+                    top5_names[i] = top5_ids[j];
 
                     top5[j] = temp
                     top5_names[j] = name_temp
+                    top5_ids[j] = id_temp
                 }
             }
         }
 
         var colors = []
         for (var i = 0; i < 5; i++) {
+            document.getElementsByClassName("lb-player")[i].innerText = "";
+            document.getElementsByClassName("lb-score")[i].innerText = "";
+            document.getElementsByClassName("lb-player")[i].style.color = "auto";
+
             if (i < top5.length) {
                 var username = top5_names[i]
 
-                for (let player in state) {
-                    if (state[player].perms == 3) {
-                        colors.push("purple");
-                    } else if (state[player].perms == 2) {
-                        colors.push("green");
-                    } else if (state[player].perms == 1) {
-                        colors.push("yellow");
-                    } else {
-                        colors.push("auto");    
-                    }
+                if (top5_ids[i] == 3) {
+                    colors.push("purple");
+                } else if (top5_ids[i] == 2) {
+                    colors.push("green");
+                } else if (top5_ids[i] == 1) {
+                    colors.push("yellow");
+                } else {
+                    colors.push("auto");    
                 }
-                
+
                 document.getElementsByClassName("lb-player")[i].innerText = username;
                 document.getElementsByClassName("lb-score")[i].innerText = top5[i];
 
                 document.getElementsByClassName("lb-player")[i].style.color = colors[i];
-               
 
             } else {
-                break;
+                
             }
         }
 
@@ -207,44 +220,88 @@ socket.on('join', data => {
     });
 });
 
+function clamp() {
+    var x = 0;
+    var y = 0;
+    var width = 0;
+    var height = 0
+
+    if (ship.pos.x > 0) {
+        // draw on left
+        if (ship.pos.x >= 3000-(canvas.width/2)) {
+            width = (canvas.width/2) - (3000-ship.pos.x);
+            height = canvas.height;
+
+        } 
+    } else {
+        if (ship.pos.x <= -3000+(canvas.width/2)) {
+            width = (canvas.width/2) + (-3000-ship.pos.x);
+            height = canvas.height;
+
+            x = (canvas.width)-width;
+            y = 0;
+        }
+    }
+
+    if (ship.pos.y > 0) {
+        // draw above
+        if (ship.pos.y >= 3000-(canvas.height/2)) {
+            height = (canvas.height/2) - (3000-ship.pos.y);
+            width = canvas.width;
+
+            x = 0;
+            y = 0;
+        } 
+    } else {
+        if (ship.pos.y <= -3000+(canvas.height/2)) {
+            height = (canvas.height/2) + (-3000-ship.pos.y);
+            width = canvas.width;
+
+            x = 0;
+            y = canvas.height-height;
+        }
+    }
+
+    if (width != 0) {
+        ctx.beginPath();
+
+        ctx.globalCompositeOperation = "destination-over";
+
+        ctx.fillStyle = "#000"
+        ctx.rect(x, y, width, height);
+        ctx.fill();
+
+        ctx.closePath();
+    }
+}
+
 /*
  * Function drawBoard - draws grid on canvas
  * takes 2 args, height, width of game canvas
 */
 var drawBoard = function(w, h) {
+    if (clamp()) return;
+
 	ctx.beginPath();
+    //clamp(ship.pos.x, ship.pos.y)
 	
     for (x = 0; x <= w; x += 50) {
-    	if ((ship.pos.x-(canvas.width/2) >= 0) && ((ship.pos.x-(canvas.width/2)) <= 3000)) {
-        	// draw vertical lines after pos.x
-        	ctx.moveTo(x+ship.pos.x, 0);
-        	ctx.lineTo(x+ship.pos.x, h);
+        // draw vertical lines after pos.x
+        ctx.moveTo(x+ship.pos.x, 0);
+        ctx.lineTo(x+ship.pos.x, h);
         
-        	// draw vertical lines before pos.x
-        	ctx.moveTo(ship.pos.x-x, 0);
-        	ctx.lineTo(ship.pos.x-x, h);
-        } else if (ship.pos.x-(canvas.width/2) <= 0) {
-        	// draw vertical lines before pos.x
-        	ctx.moveTo((ship.pos.x-x)+canvas.width/2, 0);
-        	ctx.lineTo((ship.pos.x-x)+canvas.width/2, h);
-        }
+        // draw vertical lines before pos.x
+        ctx.moveTo(ship.pos.x-x, 0);
+        ctx.lineTo(ship.pos.x-x, h);
         
         for (y = 0; y <= h; y += 50) {
-        	if ((ship.pos.y-(canvas.height/2) >= 0)) {
-            	// draw horizontal lines after pos.y
-            	ctx.moveTo(0, y+ship.pos.y);
-            	ctx.lineTo(w, y+ship.pos.y);
+            // draw horizontal lines after pos.y
+            ctx.moveTo(0, y+ship.pos.y);
+            ctx.lineTo(w, y+ship.pos.y);
             
-            	// draw horizontal lines before pos.y
-            	ctx.moveTo(0, ship.pos.y-y);
-            	ctx.lineTo(w, ship.pos.y-y);
-            } else if (ship.pos.y-(canvas.height/2) <= 0) {
-        		// draw horizontal lines before pos.y
-            	ctx.moveTo(0, (ship.pos.y-y)+canvas.height/2);
-            	ctx.lineTo(w, (ship.pos.y-y)+canvas.height/2);
-        	}
-        	
-        	
+            // draw horizontal lines before pos.y
+            ctx.moveTo(0, ship.pos.y-y);
+            ctx.lineTo(w, ship.pos.y-y);	
         }
     }
     ctx.strokeStyle = "gray";
@@ -310,8 +367,11 @@ function update() {
         return;
     }
 
-    drawBoard(innerWidth, innerHeight);
+    // ctx.translate();
+    drawBoard(6000, 6000);
+
     ctx.translate((innerWidth - shipWidth) / 2, (innerHeight - shipWidth) / 2);
+
     ctx.save();
 
     // use rotated sprites instead of ctx.translate for
@@ -319,7 +379,9 @@ function update() {
 
     var rotation = getRotation(ship.pos.r);
 
+    ctx.globalCompositeOperation = "source-over";
     ctx.drawImage(ships[ship.ship](rotation), 0, 0, shipWidth, shipWidth);
+
     ctx.restore();
 
     ctx.fillStyle = "white";
@@ -417,8 +479,6 @@ socket.on("death", score => {
     document.removeEventListener('keyup', keyup);
     document.removeEventListener('keydown', keydown);
 
-    document.getElementById('chat').style.display = "none";
-    document.getElementById('chatinput').style.display = "none";
     document.getElementById('leaderboard').style.display = "none";
     document.getElementById('death').style.display = "block";
     document.getElementById('dead_score').innerText = "Your Score: " + parseInt(score);

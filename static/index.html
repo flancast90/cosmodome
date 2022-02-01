@@ -5,19 +5,14 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Cosmonot.io - An Arcade Space Strategy Game</title>
+	<title>Cosmodo.me - An Arcade Space Strategy Game</title>
 
 	<link rel="stylesheet" href="css/style.css">
 
-	<script src="/socket.io/socket.io.js">
-
-	</script>
-	<script src="js/main.js" defer>
-
-	</script>
-	<script src="js/nanomodal.min.js">
-
-	</script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="js/main.js" defer></script>
+	<script src="js/nanomodal.min.js"></script>
+    <script src="js/client.js"></script>
 
 </head>
 
@@ -27,16 +22,27 @@
 	<div class="navbar">
 		<div>
 			<p class="neon">Top Score: <span class="top-score">0</span></p></div>
-  	<div class="score-field"><p class="neon">Score: <span class="score">0</span></p></div>
-  </div>
+  	    <div class="score-field"><p class="neon">Score: <span class="score">0</span></p></div>
+    </div>
 
-  <div id="discord" class="respawn">
+    <div id="discord" class="respawn" style="display:none;">
 		<h1 class="neon">Want to Become a Larger Part of the Cosmodome Community? Join us on Discord! </h1>
 		<br>
 		<center>
 			<a href="https://discord.gg/RmnMANVVDn"><img style="width: 75%;" src="images/discord.png"/></a>
 		</center>
 	</div>
+
+    <div id="how-to-play" class="respawn" style="display:none;">
+        <h1 class="neon">How to Play:</h1>
+		<br>
+		<ol class="neon" style="font-size:1.5em; line-height:1.5; margin-left: 20px;">
+            <li> Use the WASD keys to control your player.
+            <li> Use your player trail to kill players, but don't hit someone else's line!
+            <li> Use ArrowLeft to toggle chat, and ArrowRight for Leaderboard/Settings.
+            <li> Get kills to level-up and conquer the map!
+        </ol>
+    </div>
 	
 	<div class="death" id="death" style="display: none;">
 		<p style="width:100%; font-family:Courier New;" class="death title" id="title">YOU DIED :(</p>
@@ -96,11 +102,11 @@
   
 
   <div class="chat page-left">
-  <div class="chat page-left active">
+  <div class="page-left active">
     <div class="content">
       <div class="chat" id="chat">
-        <form class="message-input" id="chatForm">
-            <input type="text" placeholder="Your message" id="chatinput">
+        <form class="message-input" id="chatForm" autocomplete="off">
+            <input type="text" placeholder="Your message" id="chatinput" required minlength="2">
             <input type="submit" value="Send">
         </form>
         <div class="messages-container"></div>
@@ -109,7 +115,7 @@
   </div>
   </div>
 
-  <canvas id="fingerprint"></canvas>
+  <canvas id="fingerprint" style="display: none;"></canvas>
   <canvas class="game" id="gameboard"></canvas>
 
   <div class="settings page-right">

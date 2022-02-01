@@ -1,9 +1,9 @@
 var movementSpeed = 5;
 
 class Ship {
-    constructor(id) {
+    constructor(id, fingerprint) {
         this.id = id;
-        this.fingerprint = undefined;
+        this.fingerprint = fingerprint;
 
         this.username = "Unknown";
         this.ship = Math.round(Math.random() * 2);
@@ -155,7 +155,9 @@ class Game {
 
     removeShip(id) {
         delete this.players[id];
+        // console.log(this.players);
     }
+
 }
 
 class Message {
