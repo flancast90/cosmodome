@@ -124,8 +124,13 @@ io.on('connection', socket => {
 setInterval(() => {
     // check to show upgrades or not
     for (let player in game.playersArray) {
-        var playerScore = game.playersArray[player].score;
-        var id = game.playersArray[player].id;
+        /*var playerScore = 0;
+        var id = null;
+
+        try {
+            playerScore = game.playersArray[player].score;
+            id = game.playersArray[player].id;
+        }
 
         if ((playerScore >= 15000) && (game.playersArray[player].hasUp1 != true)) {
             io.to(id).emit("upgrades1")
@@ -139,7 +144,7 @@ setInterval(() => {
             io.to(id).emit("upgrades3")
             game.playersArray[player].hasUp3 = true;
 
-        }
+        }*/
 
         // check if player is dead or not
         game.playersArray.forEach(user => {
