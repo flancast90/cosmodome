@@ -432,6 +432,7 @@ function update() {
         } else {
             rotation = getRotation(enemy.pos.r);
 
+            ctx.globalCompositeOperation = "source-over";
             ctx.drawImage(ships[enemy.ship](rotation), ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth);
             ctx.fillText(enemy.username, ship.pos.x - enemy.pos.x + shipWidth / 2, ship.pos.y - enemy.pos.y, shipWidth * 2);
         }
