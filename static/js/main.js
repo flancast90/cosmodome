@@ -183,7 +183,7 @@ socket.on('join', data => {
         for (var i = 0; i < 5; i++) {
             document.getElementsByClassName("lb-player")[i].innerText = "";
             document.getElementsByClassName("lb-score")[i].innerText = "";
-            document.getElementsByClassName("lb-player")[i].style.color = "auto";
+            document.getElementsByClassName("lb-player")[i].style.color = "lightblue";
 
             if (i < top5.length) {
                 var username = top5_names[i]
@@ -195,10 +195,10 @@ socket.on('join', data => {
                 } else if (top5_ids[i] == 1) {
                     colors.push("yellow");
                 } else {
-                    colors.push("auto");    
+                    colors.push("lightblue");    
                 }
 
-                document.getElementsByClassName("lb-player")[i].innerText = username;
+                document.getElementsByClassName("lb-player")[i].innerText = String(username).substring(0, 6);
                 document.getElementsByClassName("lb-score")[i].innerText = top5[i];
 
                 document.getElementsByClassName("lb-player")[i].style.color = colors[i];

@@ -19,6 +19,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }))
 
 var game = new Game(3000, 3000);
+var uptime = 0;
 
 app.use(express.static(path.join(__dirname, "static")));
 
@@ -234,7 +235,7 @@ setInterval(() => {
         }
     }
 
-    if ((gamePlayers < 5)&&(gamePlayers > 0)&&(gamePlayers != aiPlayers)) {
+    if ((gamePlayers < 5)&&(gamePlayers > 0)&&(gamePlayers != aiPlayers)&&(uptime % 50 == 0)) {
         for (var i=0; i<6-gamePlayers; i++) {
             // make a few AI ships
             var keys = ['w', 'a', 's', 'd']
@@ -251,6 +252,8 @@ setInterval(() => {
             game.players["AI"+i].joinedAt = Date.now();
 
             aiMovement(game.players["AI"+i], keys[Math.floor(Math.random() * keys.length)]);
+
+            uptime = uptime-50;
         }
     }
 
@@ -295,6 +298,8 @@ setInterval(() => {
             }
         }
     }
+
+    uptime++;
 }, 20);
 
 
