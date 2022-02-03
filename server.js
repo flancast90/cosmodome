@@ -63,7 +63,7 @@ io.on('connection', socket => {
     });
 
     socket.on('start', data => {
-        var ship = new Ship(socket.id, fingerprint);
+        var ship = new Ship(socket.id, fingerprint, false);
         
         game.addShip(ship);
         delete ship;
@@ -121,6 +121,33 @@ io.on('connection', socket => {
     });
 });
 
+// control function for AI movement
+function aiMovement(aiPlayer, direction) {
+    var directions = ['w', 'a', 's', 'd']
+
+    for (var i=0; i<directions.length; i++) {
+        if (directions[i] != direction) {
+            aiPlayer.keys[directions[i]] = false;
+        } else {
+            aiPlayer.keys[directions[i]] = true;
+            aiPlayer.lastKey = directions[i];
+        }
+    }
+}
+
+// control function for AI run behaviour
+function aiReverse(aiPlayer, enemyDir) {
+    if (enemyDir['w']) {
+        aiMovement(aiPlayer, 's')
+    } else if (enemyDir['a']) {
+        aiMovement(aiPlayer, 'd')
+    } else if (enemyDir['s']) {
+        aiMovement(aiPlayer, 'w')
+    } else if (enemyDir['d']) {
+        aiMovement(aiPlayer, 'a')
+    }
+}
+
 setInterval(() => {
     // check to show upgrades or not
     for (let player in game.playersArray) {
@@ -173,6 +200,8 @@ setInterval(() => {
                                 });
                                 
                                 //delete game.playersArray[player];
+                                game.playersArray[player].isDead = true;
+
                                 game.removeShip(game.playersArray[player].id);
                                 //delete game.players[game.playersArray[player].id]
                                 
@@ -193,26 +222,77 @@ setInterval(() => {
     });
     
     var gamePlayers = 0;
+    var aiPlayers = 0;
+
     for (let player in game.playersArray) {
-        gamePlayers++;
+        if (game.playersArray[player].isDead == false) {
+            gamePlayers++;
+        }
+
+        if ((game.playersArray[player].isAi)&&(game.playersArray[player].isDead == false)) {
+            aiPlayers++;
+        }
     }
 
-    if ((gamePlayers < 5)&&(gamePlayers > 0)) {
-        for (var i=0; i<gamePlayers; i++) {
+    if ((gamePlayers < 5)&&(gamePlayers > 0)&&(gamePlayers != aiPlayers)) {
+        for (var i=0; i<6-gamePlayers; i++) {
             // make a few AI ships
-            var usernames = [ "Michael", "Christopher", "Jessica", "Matthew", "Ashley", "Jennifer", "Joshua", "Amanda", "Daniel", "David", "James", "Robert", "John", "Joseph", "Andrew", "Ryan", "Brandon", "Jason", "Justin", "Sarah", "William", "Jonathan", "Stephanie", "Brian", "Nicole", "Nicholas", "Anthony", "Heather", "Eric", "Elizabeth", "Adam", "Megan", "Melissa", "Kevin", "Steven", "Thomas", "Timothy", "Christina", "Kyle", "Rachel", "Laura", "Lauren", "Amber", "Brittany", "Danielle", "Richard", "Kimberly", "Jeffrey", "Amy", "Crystal", "Michelle", "Tiffany", "Jeremy", "Benjamin", "Mark", "Emily", "Aaron", "Charles", "Rebecca", "Jacob", "Stephen", "Patrick", "Sean", "Erin", "Zachary", "Jamie", "Kelly", "Samantha", "Nathan", "Sara", "Dustin", "Paul", "Angela", "Tyler", "Scott", "Katherine", "Andrea", "Gregory", "Erica", "Mary", "Travis", "Lisa", "Kenneth", "Bryan", "Lindsey", "Kristen", "Jose", "Alexander", "Jesse", "Katie", "Lindsay", "Shannon", "Vanessa", "Courtney", "Christine", "Alicia", "Cody", "Allison", "Bradley", "Samuel", "Shawn", "April", "Derek", "Kathryn", "Kristin", "Chad", "Jenna", "Tara", "Maria", "Krystal", "Jared", "Anna", "Edward", "Julie", "Peter", "Holly", "Marcus", "Kristina", "Natalie", "Jordan", "Victoria", "Jacqueline", "Corey", "Keith", "Monica", "Juan", "Donald", "Cassandra", "Meghan", "Joel", "Shane", "Phillip", "Patricia", "Brett", "Ronald", "Catherine", "George", "Antonio", "Cynthia", "Stacy", "Kathleen", "Raymond", "Carlos", "Brandi", "Douglas", "Nathaniel", "Ian", "Craig", "Brandy", "Alex", "Valerie", "Veronica", "Cory", "Whitney", "Gary", "Derrick", "Philip", "Luis", "Diana", "Chelsea", "Leslie", "Caitlin", "Leah", "Natasha", "Erika", "Casey", "Latoya", "Erik", "Dana", "Victor", "Brent", "Dominique", "Frank", "Brittney", "Evan", "Gabriel", "Julia", "Candice", "Karen", "Melanie", "Adrian", "Stacey", "Margaret", "Sheena", "Wesley", "Vincent", "Alexandra", "Katrina", "Bethany", "Nichole", "Larry", "Jeffery", "Curtis", "Carrie", "Todd", "Blake", "Christian", "Randy", "Dennis", "Alison", "Trevor", "Seth", "Kara", "Joanna", "Rachael", "Luke", "Felicia", "Brooke", "Austin", "Candace", "Jasmine", "Jesus", "Alan", "Susan", "Sandra", "Tracy", "Kayla", "Nancy", "Tina", "Krystle", "Russell", "Jeremiah", "Carl", "Miguel", "Tony", "Alexis", "Gina", "Jillian", "Pamela", "Mitchell", "Hannah", "Renee", "Denise", "Molly", "Jerry", "Misty", "Mario", "Johnathan", "Jaclyn", "Brenda", "Terry", "Lacey", "Shaun", "Devin", "Heidi", "Troy", "Lucas", "Desiree", "Jorge" ]
+            var keys = ['w', 'a', 's', 'd']
+            var usernames = [ "Michael", "Christopher", "Jessica", "Matthew", "Ashley", "Jennifer", "Joshua", "Amanda", "Daniel", "David", "James", "Robert", "John", "Joseph", "Andrew", "Ryan", "Brandon", "Jason", "Justin", "Sarah", "William", "Jonathan", "Stephanie", "Brian", "Nicole", "Nicholas", "Anthony", "Heather", "Eric", "Elizabeth", "Adam", "Megan", "Melissa", "Kevin", "Steven", "Thomas", "Timothy", "Christina", "Kyle", "Rachel", "Laura", "Lauren", "Amber", "Brittany", "Danielle", "Richard", "Kimberly", "Jeffrey", "Amy", "Crystal", "Michelle", "Tiffany", "Jeremy", "Benjamin", "Mark", "Emily", "Aaron", "Charles", "Rebecca", "Jacob", "Stephen", "Patrick", "Sean", "Erin", "Zachary", "Jamie", "Kelly", "Samantha", "Nathan", "Sara", "Dustin", "Paul", "Angela", "Tyler", "Scott", "Katherine", "Andrea", "Gregory", "Erica", "Mary", "Travis", "Lisa", "Kenneth", "Bryan", "Lindsey", "Kristen", "Jose", "Alexander", "Jesse", "Katie", "Lindsay", "Shannon", "Vanessa", "Courtney", "Christine", "Alicia", "Cody", "Allison", "Bradley", "Samuel", "Shawn", "April", "Derek", "Kathryn", "Kristin", "Chad", "Jenna", "Tara", "Maria", "Krystal", "Jared", "Anna", "Edward", "Julie", "Peter", "Holly", "Marcus", "Kristina", "Natalie", "Jordan", "Victoria", "Jacqueline", "Corey", "Keith", "Monica", "Juan", "Donald", "Cassandra", "Meghan", "Joel", "Shane", "Phillip", "Patricia", "Brett", "Ronald", "Catherine", "George", "Antonio", "Cynthia", "Stacy", "Kathleen", "Raymond", "Carlos", "Brandi", "Douglas", "Nathaniel", "Ian", "Craig", "Brandy", "Alex", "Valerie", "Veronica", "Cory", "Whitney", "Gary", "Derrick", "Philip", "Luis", "Diana", "Chelsea", "Leslie", "Caitlin", "Leah", "Natasha", "Erika", "Casey", "Latoya", "Erik", "Dana", "Victor", "Brent", "Dominique", "Frank", "Brittney", "Evan", "Gabriel", "Julia", "Candice", "Karen", "Melanie", "Adrian", "Stacey", "Margaret", "Sheena", "Wesley", "Vincent", "Alexandra", "Katrina", "Bethany", "Nichole", "Larry", "Jeffery", "Curtis", "Carrie", "Todd", "Blake", "Christian", "Randy", "Dennis", "Alison", "Trevor", "Seth", "Kara", "Joanna", "Rachael", "Luke", "Felicia", "Brooke", "Austin", "Candace", "Jasmine", "Jesus", "Alan", "Susan", "Sandra", "Tracy", "Kayla", "Nancy", "Tina", "Krystle", "Russell", "Jeremiah", "Carl", "Miguel", "Tony", "Alexis", "Gina", "Jillian", "Pamela", "Mitchell", "Hannah", "Renee", "Denise", "Molly", "Jerry", "Misty", "Mario", "Johnathan", "Jaclyn", "Brenda", "Terry", "Lacey", "Shaun", "Devin", "Heidi", "Troy", "Lucas", "Desiree", "Jorge"];
 
-            var ai_ship = new Ship("AI"+i, "");
+            var ai_ship = new Ship("AI"+i, "", true);
         
             game.addShip(ai_ship);
-            /*delete ai_ship;*/
+            delete ai_ship;
 
             game.players["AI"+i].username = usernames[Math.floor(Math.random() * (usernames.length-1))];
 
             game.players["AI"+i].fingerprint = "";
             game.players["AI"+i].joinedAt = Date.now();
 
-            /*io.sockets.emit('join', { ship: game.players["AI"+i], state: game.playersArray });*/
+            aiMovement(game.players["AI"+i], keys[Math.floor(Math.random() * keys.length)]);
+        }
+    }
+
+    for (let player in game.playersArray) {
+        if (game.playersArray[player].isAi) {
+            var thisPlayer = game.playersArray[player];
+
+            if (thisPlayer.pos.x >= 2950) {
+                // player is on left wall
+                aiMovement(thisPlayer, 'd')
+
+            } else if (thisPlayer.pos.x <= -2950) {
+                // player is on right wall
+                aiMovement(thisPlayer, 'a')
+            }
+
+            if (thisPlayer.pos.y >= 2950) {
+                // player is on top wall
+                aiMovement(thisPlayer, 's')
+
+            } else if (thisPlayer.pos.y <= -2950) {
+                // player is on bottom wall
+                aiMovement(thisPlayer, 'w')
+            }
+
+            // by default run from players
+            for (let enemy in game.playersArray) {
+                if (game.playersArray[enemy] == thisPlayer) {
+                    break;
+                }
+
+                var enemyPos = {
+                    x: game.playersArray[enemy].pos.x,
+                    y: game.playersArray[enemy].pos.y
+                }
+
+                if ((thisPlayer.pos.x - 300 < enemyPos.x) && (enemyPos.x < thisPlayer.pos.x + 300)) {
+                    if ((thisPlayer.pos.y - 300 < enemyPos.y) && (enemyPos.y < thisPlayer.pos.y + 300)) {
+                        aiReverse(thisPlayer, game.playersArray[enemy].keys);
+                    }
+                }
+            }
         }
     }
 }, 20);

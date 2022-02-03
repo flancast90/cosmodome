@@ -1,7 +1,7 @@
 var movementSpeed = 5;
 
 class Ship {
-    constructor(id, fingerprint) {
+    constructor(id, fingerprint, isAi) {
         this.id = id;
         this.fingerprint = fingerprint;
 
@@ -9,6 +9,8 @@ class Ship {
         this.ship = Math.round(Math.random() * 2);
         this.joinedAt = Date.now();
         this.score = 100;
+        this.isAi = isAi;
+        this.isDead = false;
 
         var x = Math.floor(Math.random() * 3000);
         var y = Math.floor(Math.random() * 3000);
