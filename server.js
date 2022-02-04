@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-//to send it on "START" Line: 67 :)
+
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require('socket.io');
@@ -88,6 +88,28 @@ io.on('connection', socket => {
         socket.emit('join', { ship: game.players[socket.id], state: game.playersArray });
     });
 
+    socket.on('upgrade', name => {
+        name = name.toLowerCase().trim();
+        console.log(name)
+
+        if (name == "+trail length") {
+            if (game.players[socket.id].upgrade1 == "") {
+                game.players[socket.id].upgrade1 = "trail"
+
+                game.players[socket.id].duration = 5000;
+            }
+        } else if (name == "+5% speed") {
+            if (game.players[socket.id].upgrade1 == "") {
+                game.players[socket.id].upgrade1 = "speed"
+            }
+        } else if (name == "+map zoom") {
+            if (game.players[socket.id].upgrade2 == "") {
+                game.players[socket.id].upgrade2 = "zoom"
+                game.players[socket.id].scale = 1;
+            }
+        }
+    });
+
     socket.on('chat', message => {
         if (!game.players[socket.id]) {
           socket.emit("chat", { username: "Server", msg: "!!! Please start the game to send a message !!!"});
@@ -152,27 +174,29 @@ function aiReverse(aiPlayer, enemyDir) {
 setInterval(() => {
     // check to show upgrades or not
     for (let player in game.playersArray) {
-        /*var playerScore = 0;
+        var playerScore = 0;
         var id = null;
 
         try {
             playerScore = game.playersArray[player].score;
             id = game.playersArray[player].id;
+
+            if ((playerScore >= 15000) && (game.playersArray[player].hasUp1 != true)) {
+                io.to(id).emit("upgrades1")
+                game.playersArray[player].hasUp1 = true;
+
+            } else if ((playerScore >= 30000) && (game.playersArray[player].hasUp2 != true)) {
+                io.to(id).emit("upgrades2")
+                game.playersArray[player].hasUp2 = true;
+
+            } else if ((playerScore >= 50000) && (game.playersArray[player].hasUp3 != true)) {
+                io.to(id).emit("upgrades3")
+                game.playersArray[player].hasUp3 = true;
+
+            }
+        } catch {
+            // pass
         }
-
-        if ((playerScore >= 15000) && (game.playersArray[player].hasUp1 != true)) {
-            io.to(id).emit("upgrades1")
-            game.playersArray[player].hasUp1 = true;
-
-        } else if ((playerScore >= 30000) && (game.playersArray[player].hasUp2 != true)) {
-            io.to(id).emit("upgrades2")
-            game.playersArray[player].hasUp2 = true;
-
-        } else if ((playerScore >= 50000) && (game.playersArray[player].hasUp3 != true)) {
-            io.to(id).emit("upgrades3")
-            game.playersArray[player].hasUp3 = true;
-
-        }*/
 
         // check if player is dead or not
         game.playersArray.forEach(user => {

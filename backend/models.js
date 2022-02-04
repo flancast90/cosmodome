@@ -8,9 +8,15 @@ class Ship {
         this.username = "Unknown";
         this.ship = Math.round(Math.random() * 2);
         this.joinedAt = Date.now();
-        this.score = 100;
+        this.score = 29850;
         this.isAi = isAi;
         this.isDead = false;
+        this.scale = 1.15;
+
+        // upgrade names
+        this.upgrade1 = ""
+        this.upgrade2 = "";
+        this.upgrade3 = "";
 
         var x = Math.floor(Math.random() * 3000);
         var y = Math.floor(Math.random() * 3000);
@@ -64,6 +70,9 @@ class Ship {
 
         if (this.perms >= Ship.Perms.Dev) {
             speed *= 1.5;
+        }
+        if (this.upgrade1 == "speed"){
+            speed *= 1.05;
         }
 
         var moved = false;

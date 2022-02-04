@@ -20,7 +20,8 @@ var ship = null;
 var wallstate = null;
 var timestamp = null;
 var chatting = false;
-var username = null
+var username = null;
+var scaleFactor = 2;
 
 var socket = io();
 
@@ -213,6 +214,7 @@ socket.on('join', data => {
         for (var player in state) {
             if (state[player].id == ship.id) {
                 ship = state[player]
+                scaleFactor = ship.scale;
             }
         }
 
@@ -408,6 +410,7 @@ function update() {
     drawBoard(6000, 6000);
 
     ctx.translate((innerWidth - shipWidth) / 2, (innerHeight - shipWidth) / 2);
+    ctx.scale(scaleFactor, scaleFactor);
 
     ctx.save();
 
@@ -421,6 +424,8 @@ function update() {
 
     ctx.restore();
 
+    ctx.globalCompositeOperation = "source-over";
+
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.font = `${shipWidth / 6}px Arial`;
@@ -433,7 +438,9 @@ function update() {
             rotation = getRotation(enemy.pos.r);
 
             ctx.globalCompositeOperation = "source-over";
+
             ctx.drawImage(ships[enemy.ship](rotation), ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth);
+
             ctx.fillText(enemy.username, ship.pos.x - enemy.pos.x + shipWidth / 2, ship.pos.y - enemy.pos.y, shipWidth * 2);
         }
     });
@@ -471,6 +478,7 @@ function update() {
                 ctx.closePath();
             }
 
+            ctx.lineWidth = 10;
             ctx.stroke();
             ctx.strokeStyle = "#000";
         }
@@ -517,25 +525,37 @@ socket.on("death", score => {
     document.removeEventListener('keyup', keyup);
     document.removeEventListener('keydown', keydown);
 
+    document.querySelector('#upgrades1').style.display = 'none';
+    document.querySelector('#upgrades2').style.display = 'none';
+    document.querySelector('#upgrades3').style.display = 'none';
+
     document.getElementById('leaderboard').style.display = "none";
     document.getElementById('death').style.display = "block";
     document.getElementById('dead_score').innerText = "Your Score: " + parseInt(score);
 });
 
-/* only active on tester server
 socket.on("upgrades1", function() {
     document.querySelector('#upgrades1').style.display = 'block';
 });
 
 socket.on("upgrades2", () => {
-    document.querySelector('#urgrades2').style.display = 'block';
+    document.querySelector('#upgrades2').style.display = 'block';
 });
 
 socket.on("upgrades3", () => {
-    document.querySelector('#urgrades3').style.display = 'block';
+    document.querySelector('#upgrades3').style.display = 'block';
 });
-*/
 
 function respawn() {
     renderGame_Fields(username);
 }
+
+document.addEventListener('click', function(e) {
+    if (e.target.className == "upgrade respawn"){
+        e.target.parentNode.style.display = "none";
+        socket.emit("upgrade", e.target.innerText);
+    } else if (e.target.parentNode.className == "upgrade respawn") {
+        e.target.parentNode.parentNode.style.display = "none";
+        socket.emit("upgrade", e.target.innerText);
+    }
+});
