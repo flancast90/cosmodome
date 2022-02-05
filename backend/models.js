@@ -2,6 +2,8 @@ var movementSpeed = 5;
 
 class Ship {
     constructor(id, fingerprint, isAi) {
+        var d = new Date();
+
         this.id = id;
         this.fingerprint = fingerprint;
 
@@ -17,6 +19,9 @@ class Ship {
         this.upgrade1 = ""
         this.upgrade2 = "";
         this.upgrade3 = "";
+        this.shieldActive = false;
+        this.shieldStart = undefined;
+        this.shieldEnd = d.getTime();
 
         var x = Math.floor(Math.random() * 3000);
         var y = Math.floor(Math.random() * 3000);

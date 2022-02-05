@@ -420,7 +420,14 @@ function update() {
     var rotation = getRotation(ship.pos.r);
 
     ctx.globalCompositeOperation = "source-over";
-    ctx.drawImage(ships[ship.ship](rotation), 0, 0, shipWidth, shipWidth);
+
+    if (ship.shieldActive != true) {
+        ctx.drawImage(ships[ship.ship](rotation), 0, 0, shipWidth, shipWidth);
+    } else {
+        var shield = new Image();
+        shield.src="images/ships/kittycat.png"
+        ctx.drawImage(shield, 0, 0, shipWidth, shipWidth)
+    }
 
     ctx.restore();
 
@@ -551,11 +558,34 @@ function respawn() {
 }
 
 document.addEventListener('click', function(e) {
+    var upgrade = null;
+
     if (e.target.className == "upgrade respawn"){
         e.target.parentNode.style.display = "none";
-        socket.emit("upgrade", e.target.innerText);
+        upgrade = e.target.innerText.toLowerCase().trim();
+
+        socket.emit("upgrade", upgrade);
     } else if (e.target.parentNode.className == "upgrade respawn") {
         e.target.parentNode.parentNode.style.display = "none";
-        socket.emit("upgrade", e.target.innerText);
+
+        upgrade = e.target.innerText.toLowerCase().trim();
+
+        socket.emit("upgrade", upgrade);
+    }
+
+    if (upgrade == "+shield (temporary)") {
+        document.querySelector('#shield').style.display = 'block';
+    } else if (upgrade == "+teleport") {
+        document.querySelector('#teleport').style.display = 'block';
+    } else if (upgrade == "+invisibility (temporary)") {
+        document.querySelector('#invisibility').style.display = 'block';
+    }
+
+    if (e.target.id == "shield") {
+        socket.emit('shield');
+    } else if (e.target.id == "teleport") {
+        socket.emit('teleport');
+    } else if (e.target.id == "invisibility") {
+        socket.emit('invisibility');
     }
 });

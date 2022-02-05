@@ -90,7 +90,7 @@ io.on('connection', socket => {
 
     socket.on('upgrade', name => {
         name = name.toLowerCase().trim();
-        console.log(name)
+        // console.log(name)
 
         if (name == "+trail length") {
             if (game.players[socket.id].upgrade1 == "") {
@@ -107,6 +107,19 @@ io.on('connection', socket => {
                 game.players[socket.id].upgrade2 = "zoom"
                 game.players[socket.id].scale = 1;
             }
+        } else if (name == "+shield (temporary)") {
+            if (game.players[socket.id].upgrade2 == "") {
+                game.players[socket.id].upgrade2 = "shield";
+            }
+        }
+    });
+
+    socket.on('shield', () => {
+        var d = new Date();
+
+        if (game.players[socket.id].upgrade2 == "shield") {
+            game.players[socket.id].shieldActive = true;
+            game.players[socket.id].shieldStart = d.getTime();
         }
     });
 
@@ -200,6 +213,17 @@ setInterval(() => {
 
         // check if player is dead or not
         game.playersArray.forEach(user => {
+            if (user.upgrade2 == "shield") {
+                if (user.shieldActive == true) {
+                    var d = new Date();
+
+                    if (user.shieldStart - d.getTime() >= 10000) {
+                        user.shieldActive = false;
+                        user.shieldEnd = d.getTime();
+                    }
+                }
+            }
+
             user.walls.forEach(wall => {
                 // console.log(wall);
                 try {

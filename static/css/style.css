@@ -386,4 +386,25 @@ body.playing .score-field {
     float: right;
 }
 
+.power-container {
+    margin-left: 20%;
+    margin-right: 20%;
+}
+
+.power-container button {
+    background-color:trancsparent;
+}
+
+.power-container img {
+    height: 50px;
+    filter: drop-shadow(0px 0px 10px #2ec4ff);
+}
+
+.left {
+    float: left;
+}
+.right {
+    float: right;
+}
+
 /*# sourceMappingURL=style.css.map */
