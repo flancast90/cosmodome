@@ -51,10 +51,12 @@ discordModal.onHide(function() {
  */
 function decideShip(num, r, shield) {
     var row = 1; 
-    var column = (num*8)-8;
+    var column = ((num+1)*8)-7;
     var spriteWidth = 0;
     var spriteHeight = 0;
     var x = 0;
+
+    var lastOrientation = "vertical";
 
     // find the column based on the pattern
     // in the spritesheet.
@@ -68,30 +70,35 @@ function decideShip(num, r, shield) {
     for (var i=1; i<=column; i++) {
         if (i == column) {
             if (i%2 == 0){
-                if ((i == 2) || (i == 6)){
-                    spriteWidth=404; spriteHeight=404
-                }else{
+                if ((column == 2) || (column == 6)){
+                    spriteWidth=404; 
+                    spriteHeight=404;
+                } else {
                     spriteWidth=362;
                     spriteHeight=362
                 }
-            } if (i%3 == 0) {
+            } else if (lastOrientation == "horizontal") {
                 spriteHeight=1280;
-                if (num==0){
+                if (i <= 8){
                     spriteWidth=896;
-                } else if (num==1) {
+                } else if (i <= 16) {
                     spriteWidth=811;
-                } else if (num==2) {
+                } else if (i <= 24) {
                     spriteWidth=597;
                 }
-            } else {
+
+                lastOrientation = "vertical";
+            } else if (lastOrientation == "vertical"){
                 spriteWidth=1280; 
-                if (num==0){
+                if (i <= 8){
                     spriteHeight=896;
-                } else if (num==1) {
+                } else if (i <= 16) {
                     spriteHeight=811;
-                } else if (num==2) {
+                } else if (i <= 24) {
                     spriteHeight=597;
                 }
+
+                lastOrientation = "horizontal"
             }
 
             break;
@@ -106,17 +113,21 @@ function decideShip(num, r, shield) {
             } else {
                 x += 362;
             }
-        } else if (i%3 == 0){
-            if (num == 0) {
+        } else if (lastOrientation == "horizontal") {
+            if (i <= 8) {
                 x += 896;
-            } else if (num == 1) {
+            } else if (i <= 16) {
                 x += 811;
-            } else if (num == 2) {
+            } else if (i <= 24) {
                 x += 597;
             }
-        } else {
+
+            lastOrientation = "vertical"
+        } else if (lastOrientation == "vertical") {
             // sideways ships are 1280 px wide
             x += 1280
+
+            lastOrientation = "horizontal"
         }
     }
 
@@ -127,7 +138,6 @@ function decideShip(num, r, shield) {
         img.src = `images/ships/`+num+`;`+r+`.png`;
     }
     return img;*/
-
     return [x, spriteWidth, spriteHeight]
 }
 
