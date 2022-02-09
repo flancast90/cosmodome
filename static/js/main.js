@@ -25,11 +25,14 @@ var scaleFactor = 2;
 
 var socket = io();
 
-const ships = [
-    ship1,
-    ship2,
-    ship3
-];
+// cut on load times by requesting only one image on page load.
+// we will then "cut" the correct ship images out of this image
+// every time we need a new ship.
+var spritesheet = new Image();
+
+window.onload = function() {
+    spritesheet.src= `images/ships.png`;
+}
 
 document.querySelector('#discord').style.display = 'block';
 
@@ -42,63 +45,90 @@ discordModal.onHide(function() {
 });
 
 
-// ship handlers
-function ship1(r) {
-    if (r == "right") {
-        var img = new Image();
-        img.src = `images/ships/0;0.png`;
-        return img;
-    } else if (r == "left") {
-        var img = new Image();
-        img.src = `images/ships/0;180.png`;
-        return img;
-    } else if (r == "up") {
-        var img = new Image();
-        img.src = `images/ships/0;270.png`;
-        return img;
-    } else if (r == "down") {
-        var img = new Image();
-        img.src = `images/ships/0;90.png`;
-        return img;
+/*
+ * function decideShip - decides which ship to draw for player
+ * takes three arguments, ship num, ship rotation, and boolean shield
+ */
+function decideShip(num, r, shield) {
+    var row = 1; 
+    var column = (num*8)-8;
+    var spriteWidth = 0;
+    var spriteHeight = 0;
+    var x = 0;
+
+    // find the column based on the pattern
+    // in the spritesheet.
+    if (r==90) {column+=2}
+    if (r==180) {column+=4}
+    if (r==270) {column+=6}
+    if (shield) {column+=1}
+
+    // determine the width before this column to find 
+    // clipping x and y
+    for (var i=1; i<=column; i++) {
+        if (i == column) {
+            if (i%2 == 0){
+                if ((i == 2) || (i == 6)){
+                    spriteWidth=404; spriteHeight=404
+                }else{
+                    spriteWidth=362;
+                    spriteHeight=362
+                }
+            } if (i%3 == 0) {
+                spriteHeight=1280;
+                if (num==0){
+                    spriteWidth=896;
+                } else if (num==1) {
+                    spriteWidth=811;
+                } else if (num==2) {
+                    spriteWidth=597;
+                }
+            } else {
+                spriteWidth=1280; 
+                if (num==0){
+                    spriteHeight=896;
+                } else if (num==1) {
+                    spriteHeight=811;
+                } else if (num==2) {
+                    spriteHeight=597;
+                }
+            }
+
+            break;
+        }
+
+        if (i%2 == 0) {
+            // shields are 362 px wide
+            if ((i == 2) || (i == 6)) {
+                // huey didn't use the EXACT images I sent
+                // so now these widths are different
+                x += 404;
+            } else {
+                x += 362;
+            }
+        } else if (i%3 == 0){
+            if (num == 0) {
+                x += 896;
+            } else if (num == 1) {
+                x += 811;
+            } else if (num == 2) {
+                x += 597;
+            }
+        } else {
+            // sideways ships are 1280 px wide
+            x += 1280
+        }
     }
-}
-function ship2(r) {
-    if (r == "right") {
-        var img = new Image();
-        img.src = `images/ships/1;0.png`;
-        return img;
-    } else if (r == "left") {
-        var img = new Image();
-        img.src = `images/ships/1;180.png`;
-        return img;
-    } else if (r == "up") {
-        var img = new Image();
-        img.src = `images/ships/1;270.png`;
-        return img;
-    } else if (r == "down") {
-        var img = new Image();
-        img.src = `images/ships/1;90.png`;
-        return img;
+
+    /*var img = new Image();
+    if (shield == true) {
+        img.src = `images/ships/`+num+`;`+r+`-shield.png`;
+    } else {
+        img.src = `images/ships/`+num+`;`+r+`.png`;
     }
-}
-function ship3(r) {
-    if (r == "right") {
-        var img = new Image();
-        img.src = `images/ships/2;0.png`;
-        return img;
-    } else if (r == "left") {
-        var img = new Image();
-        img.src = `images/ships/2;180.png`;
-        return img;
-    } else if (r == "up") {
-        var img = new Image();
-        img.src = `images/ships/2;270.png`;
-        return img;
-    } else if (r == "down") {
-        var img = new Image();
-        img.src = `images/ships/2;90.png`;
-        return img;
-    }
+    return img;*/
+
+    return [x, spriteWidth, spriteHeight]
 }
 
 // for sending keys to server
@@ -372,29 +402,6 @@ function renderGame_Fields(playerName) {
 }
 
 /*
- * function rotation - converts canvas data coords to directional strings
- * takes one arg: r, representing the data coord integer.
-*/
-function getRotation(r) {
-    var rotation = null;
-    if (r == 270) {
-        // up
-        rotation = "up"
-    } else if (r == 90) {
-        // down
-        rotation = "down"
-    } else if (r == 180) {
-        // left
-        rotation = "left"
-    } else if (r == 0) {
-        // right
-        rotation = "right"
-    }
-
-    return rotation
-}
-
-/*
  * function update - renders game elements on the client side
  * takes no args, relying on data sent by server in mainloop
 */
@@ -409,7 +416,12 @@ function update() {
     // ctx.translate();
     drawBoard(6000, 6000);
 
-    ctx.translate((innerWidth - shipWidth) / 2, (innerHeight - shipWidth) / 2);
+    if (ship.shieldActive != true) {
+        ctx.translate((innerWidth - shipWidth) / 2, (innerHeight - shipWidth) / 2);
+    } else {
+        ctx.translate((innerWidth - shipWidth) / 2, (innerHeight - shipWidth) / 2);
+    }
+
     ctx.scale(scaleFactor, scaleFactor);
 
     ctx.save();
@@ -417,36 +429,38 @@ function update() {
     // use rotated sprites instead of ctx.translate for
     // better performance
 
-    var rotation = getRotation(ship.pos.r);
-
     ctx.globalCompositeOperation = "source-over";
 
-    if (ship.shieldActive != true) {
-        ctx.drawImage(ships[ship.ship](rotation), 0, 0, shipWidth, shipWidth);
-    } else {
-        var shield = new Image();
-        shield.src="images/ships/kittycat.png"
-        ctx.drawImage(shield, 0, 0, shipWidth, shipWidth)
+    if ((ship.shieldActive != true)&&(ship.invisibilityActive != true)) {
+        var cut = decideShip(ship.ship, ship.pos.r, false)
+
+        ctx.drawImage(spritesheet, cut[0], 0, cut[1], cut[2], 0, 0, shipWidth, shipWidth);
+    } else if (ship.invisibilityActive != true) {
+        shipWidth *= 1.5;
+        // get spritesheet coords [before x, cropWidth, cropHeight]
+        var cut = decideShip(ship.ship, ship.pos.r, true)
+
+        ctx.drawImage(spritesheet, cut[0], 0, cut[1], cut[2], 0, 0, shipWidth, shipWidth);
     }
 
     ctx.restore();
 
     ctx.globalCompositeOperation = "source-over";
 
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.font = `${shipWidth / 6}px Arial`;
-    ctx.fillText(ship.username, shipWidth / 2, 0, shipWidth * 2);
+    if (ship.invisibilityActive != true) {
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.font = `${shipWidth / 6}px Arial`;
+        ctx.fillText(ship.username, shipWidth / 2, 0, shipWidth * 2);
+    }
 
     state.forEach(enemy => {
         if (!enemy || enemy.id == ship.id) {
             // do nothing
-        } else {
-            rotation = getRotation(enemy.pos.r);
-
+        } else if (enemy.invisibilityActive != true) {
             ctx.globalCompositeOperation = "source-over";
 
-            ctx.drawImage(ships[enemy.ship](rotation), ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth);
+            ctx.drawImage(decideShip(ship.ship, ship.pos.r, false), ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth);
 
             ctx.fillText(enemy.username, ship.pos.x - enemy.pos.x + shipWidth / 2, ship.pos.y - enemy.pos.y, shipWidth * 2);
         }
@@ -583,9 +597,24 @@ document.addEventListener('click', function(e) {
 
     if (e.target.id == "shield") {
         socket.emit('shield');
+        document.querySelector('#shield').style.display = 'none';
+
+        setTimeout(function() {
+            document.querySelector('#shield').style.display = 'block';
+        }, 10000);
     } else if (e.target.id == "teleport") {
         socket.emit('teleport');
+        document.querySelector('#teleport').style.display = 'none';
+
+        setTimeout(function() {
+            document.querySelector('#teleport').style.display = 'block';
+        }, 10000);
     } else if (e.target.id == "invisibility") {
         socket.emit('invisibility');
+        document.querySelector('#invisibility').style.display = 'none';
+
+        setTimeout(function() {
+            document.querySelector('#invisibility').style.display = 'block';
+        }, 10000);
     }
 });

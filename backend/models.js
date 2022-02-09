@@ -10,7 +10,7 @@ class Ship {
         this.username = "Unknown";
         this.ship = Math.round(Math.random() * 2);
         this.joinedAt = Date.now();
-        this.score = 29850;
+        this.score = 49850;
         this.isAi = isAi;
         this.isDead = false;
         this.scale = 1.15;
@@ -22,6 +22,9 @@ class Ship {
         this.shieldActive = false;
         this.shieldStart = undefined;
         this.shieldEnd = d.getTime();
+        this.invisibilityActive = false;
+        this.invisibilityStart = undefined;
+        this.invisibilityEnd = d.getTime();
 
         var x = Math.floor(Math.random() * 3000);
         var y = Math.floor(Math.random() * 3000);

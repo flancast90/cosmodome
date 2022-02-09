@@ -111,15 +111,27 @@ io.on('connection', socket => {
             if (game.players[socket.id].upgrade2 == "") {
                 game.players[socket.id].upgrade2 = "shield";
             }
+        } else if (name == "+invisibility (temporary)") {
+            if (game.players[socket.id].upgrade3 == "") {
+                game.players[socket.id].upgrade3 = "invisibility";
+            }
         }
     });
 
     socket.on('shield', () => {
         var d = new Date();
 
-        if (game.players[socket.id].upgrade2 == "shield") {
+        if ((game.players[socket.id].upgrade2 == "shield")&&(d.getTime() - game.players[socket.id].shieldEnd >= 10000)) {
             game.players[socket.id].shieldActive = true;
             game.players[socket.id].shieldStart = d.getTime();
+        }
+    });
+    socket.on('invisibility', () => {
+        var d = new Date();
+
+        if ((game.players[socket.id].upgrade3 == "invisibility")&&(d.getTime() - game.players[socket.id].invisibilityEnd >= 10000)) {
+            game.players[socket.id].invisibilityActive = true;
+            game.players[socket.id].invisibilityStart = d.getTime();
         }
     });
 
@@ -217,9 +229,20 @@ setInterval(() => {
                 if (user.shieldActive == true) {
                     var d = new Date();
 
-                    if (user.shieldStart - d.getTime() >= 10000) {
+                    if (d.getTime()-user.shieldStart >= 10000) {
                         user.shieldActive = false;
                         user.shieldEnd = d.getTime();
+                    }
+                }
+            }
+
+            if (user.upgrade3 == "invisibility") {
+                if (user.invisibilityActive == true) {
+                    var d = new Date();
+
+                    if (d.getTime()-user.invisibilityStart >= 10000) {
+                        user.invisibilityActive = false;
+                        user.invisibilityEnd = d.getTime();
                     }
                 }
             }
@@ -230,29 +253,32 @@ setInterval(() => {
                     if ((game.playersArray[player].pos.x - 45 < wall[0]) && (wall[0] < game.playersArray[player].pos.x + 45)) {
                         if ((game.playersArray[player].pos.y - 45 < wall[1]) && (wall[1] < game.playersArray[player].pos.y + 45)) {
                             if (user != game.playersArray[player]) {
-                                try { 
-                                    var score = game.playersArray[player].score;
-                                    io.to(game.playersArray[player].id).emit("death", score);
-                                } catch (e){
-                                    console.log(e);
-                                }
+                                if (game.playersArray[player].shieldActive == false) {
+                                    try { 
+                                        var score = game.playersArray[player].score;
+                                        io.to(game.playersArray[player].id).emit("death", score);
+                                    } catch (e){
+                                        console.log(e);
+                                    }
 
-                                try {
-                                    user.score += 1000;
-                                } catch {
+                                    try {
+                                        user.score += 1000;
+                                    } catch {
                                     
-                                }
+                                    }
 
-                                io.sockets.emit("chat", {
-                                    username: "SYSTEM",
-                                    msg: user.username + " killed " + game.playersArray[player].username
-                                });
+                                    io.sockets.emit("chat", {
+                                        username: "SYSTEM",
+                                        msg: user.username + " killed " + game.playersArray[player].username
+                                    });
                                 
-                                //delete game.playersArray[player];
-                                game.playersArray[player].isDead = true;
+                                    //delete game.playersArray[player];
+                                    game.playersArray[player].isDead = true;
 
-                                game.removeShip(game.playersArray[player].id);
-                                //delete game.players[game.playersArray[player].id]
+                                    game.removeShip(game.playersArray[player].id);
+                                    //delete game.players[game.playersArray[player].id]
+                                  
+                                }
                                 
                             }
                         }
@@ -283,7 +309,7 @@ setInterval(() => {
         }
     }
 
-    if ((gamePlayers < 5)&&(gamePlayers > 0)&&(gamePlayers != aiPlayers)&&(uptime % 50 == 0)) {
+    /*if ((gamePlayers < 5)&&(gamePlayers > 0)&&(gamePlayers != aiPlayers)&&(uptime % 50 == 0)) {
         for (var i=0; i<6-gamePlayers; i++) {
             // make a few AI ships
             var keys = ['w', 'a', 's', 'd']
@@ -303,7 +329,7 @@ setInterval(() => {
 
             uptime = uptime-50;
         }
-    }
+    }*/
 
     for (let player in game.playersArray) {
         if (game.playersArray[player].isAi) {
