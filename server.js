@@ -115,13 +115,17 @@ io.on('connection', socket => {
             if (game.players[socket.id].upgrade3 == "") {
                 game.players[socket.id].upgrade3 = "invisibility";
             }
+        } else if (name == "+teleport") {
+            if (game.players[socket.id].upgrade3 == "") {
+                game.players[socket.id].upgrade3 = "teleport";
+            }
         }
     });
 
     socket.on('shield', () => {
         var d = new Date();
 
-        if ((game.players[socket.id].upgrade2 == "shield")&&(d.getTime() - game.players[socket.id].shieldEnd >= 10000)) {
+        if ((game.players[socket.id].upgrade2 == "shield")&&(d.getTime() - game.players[socket.id].shieldEnd >= 9000)) {
             game.players[socket.id].shieldActive = true;
             game.players[socket.id].shieldStart = d.getTime();
         }
@@ -129,9 +133,23 @@ io.on('connection', socket => {
     socket.on('invisibility', () => {
         var d = new Date();
 
-        if ((game.players[socket.id].upgrade3 == "invisibility")&&(d.getTime() - game.players[socket.id].invisibilityEnd >= 10000)) {
+        if ((game.players[socket.id].upgrade3 == "invisibility")&&(d.getTime() - game.players[socket.id].invisibilityEnd >= 9000)) {
             game.players[socket.id].invisibilityActive = true;
             game.players[socket.id].invisibilityStart = d.getTime();
+        }
+    });
+
+    socket.on('teleport', (change) => {
+        var d = new Date();
+
+        if ((game.players[socket.id].upgrade3 == "teleport")&&(d.getTime() - game.players[socket.id].teleportEnd >= 9000)) {
+            game.players[socket.id].teleportEnd = d.getTime();
+
+            game.players[socket.id].end.x = game.players[socket.id].pos.x-change.x;
+            game.players[socket.id].end.y = game.players[socket.id].pos.y-change.y;
+        
+            game.players[socket.id].pos.x = game.players[socket.id].pos.x-change.x;
+            game.players[socket.id].pos.y = game.players[socket.id].pos.y-change.y;
         }
     });
 
@@ -309,7 +327,7 @@ setInterval(() => {
         }
     }
 
-    /*if ((gamePlayers < 5)&&(gamePlayers > 0)&&(gamePlayers != aiPlayers)&&(uptime % 50 == 0)) {
+    if ((gamePlayers < 5)&&(gamePlayers > 0)&&(gamePlayers != aiPlayers)&&(uptime % 50 == 0)) {
         for (var i=0; i<6-gamePlayers; i++) {
             // make a few AI ships
             var keys = ['w', 'a', 's', 'd']
@@ -329,7 +347,7 @@ setInterval(() => {
 
             uptime = uptime-50;
         }
-    }*/
+    }
 
     for (let player in game.playersArray) {
         if (game.playersArray[player].isAi) {

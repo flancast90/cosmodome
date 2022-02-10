@@ -25,6 +25,7 @@ class Ship {
         this.invisibilityActive = false;
         this.invisibilityStart = undefined;
         this.invisibilityEnd = d.getTime();
+        this.teleportEnd = d.getTime();
 
         var x = Math.floor(Math.random() * 3000);
         var y = Math.floor(Math.random() * 3000);

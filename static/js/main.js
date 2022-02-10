@@ -23,6 +23,9 @@ var chatting = false;
 var username = null;
 var scaleFactor = 2;
 
+var x = 0;
+var y = 0;
+
 var socket = io();
 
 // cut on load times by requesting only one image on page load.
@@ -470,7 +473,15 @@ function update() {
         } else if (enemy.invisibilityActive != true) {
             ctx.globalCompositeOperation = "source-over";
 
-            ctx.drawImage(decideShip(ship.ship, ship.pos.r, false), ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth);
+            if (enemy.shieldActive != true) {
+                var cut2 = decideShip(enemy.ship, enemy.pos.r, false);
+
+                ctx.drawImage(spritesheet, cut2[0], 0, cut2[1], cut2[2], ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth);
+            } else {
+                var cut2 = decideShip(enemy.ship, enemy.pos.r, true);
+
+                ctx.drawImage(spritesheet, cut2[0], 0, cut2[1], cut2[2], ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth);
+            }
 
             ctx.fillText(enemy.username, ship.pos.x - enemy.pos.x + shipWidth / 2, ship.pos.y - enemy.pos.y, shipWidth * 2);
         }
@@ -581,8 +592,25 @@ function respawn() {
     renderGame_Fields(username);
 }
 
+var awaitingTp = false;
+
 document.addEventListener('click', function(e) {
     var upgrade = null;
+
+    var rect = canvas.getBoundingClientRect();
+    x = ((e.clientX - rect.left) / (rect.right - rect.left) * canvas.width)-(innerWidth-shipWidth)/2;
+    y = ((e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height)-(innerHeight-shipWidth)/2;
+
+    if (awaitingTp == true) {
+        socket.emit('teleport', {x, y});
+        awaitingTp = false;
+
+        document.querySelector('#teleport').style.display = 'none';
+
+        setTimeout(function() {
+            document.querySelector('#teleport').style.display = 'block';
+        }, 10000);
+    }
 
     if (e.target.className == "upgrade respawn"){
         e.target.parentNode.style.display = "none";
@@ -613,12 +641,9 @@ document.addEventListener('click', function(e) {
             document.querySelector('#shield').style.display = 'block';
         }, 10000);
     } else if (e.target.id == "teleport") {
-        socket.emit('teleport');
-        document.querySelector('#teleport').style.display = 'none';
-
-        setTimeout(function() {
-            document.querySelector('#teleport').style.display = 'block';
-        }, 10000);
+        if (awaitingTp == false) {
+            awaitingTp = true;
+        }
     } else if (e.target.id == "invisibility") {
         socket.emit('invisibility');
         document.querySelector('#invisibility').style.display = 'none';
