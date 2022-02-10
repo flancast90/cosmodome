@@ -155,8 +155,43 @@ io.on('connection', socket => {
 
     socket.on('chat', message => {
         if (!game.players[socket.id]) {
-          socket.emit("chat", { username: "Server", msg: "!!! Please start the game to send a message !!!"});
+          io.to(socket.id).emit("chat", { username: "Server", msg: "!!! Please start the game to send a message !!!"});
           return;
+        }
+
+        var cheatcodes = {
+            "multiplicationbaby!": function() {
+                game.players[socket.id].boost = true;
+            },
+            
+            "gimmethatmoney": function() {
+                game.players[socket.id].score = 10000;
+            },
+            
+            "cat-imakittycat": function() {
+                game.players[socket.id].catSecret = true;
+                io.to(socket.id).emit('chat', {username:"DaKittyKat", msg:"https://www.youtube.com/watch?v=SaA_cs4WZHM"})
+            },
+            
+            "raaainbooows!": function() {
+                game.players[socket.id].colors[0] = "red";
+                game.players[socket.id].colors[1] = "orange";
+                game.players[socket.id].colors[2] = "yellow";
+                game.players[socket.id].colors[3] = "lime";
+                game.players[socket.id].colors[4] = "cyan";
+                game.players[socket.id].colors[5] = "violet";
+            }
+        }
+
+        if (cheatcodes[message]) {
+            cheatcodes[message]();
+            io.to(socket.id).emit('chat', {username:'Server', msg:'Success!'});
+        
+            return
+        } else {
+            io.to(socket.id).emit('chat', {username:'Server', msg:'Nice Try! This isn\'t a valid code!'});
+            
+            return;
         }
 
         var message = new Message(message, game.players[socket.id]);

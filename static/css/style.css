@@ -407,4 +407,16 @@ body.playing .score-field {
     float: right;
 }
 
+.footer {
+  position: fixed;
+  width: 100vw;
+  bottom:0px;
+  left:0px;
+  text-align: center;
+}
+
+.link {
+  font-size: 1.2em;
+}
+
 /*# sourceMappingURL=style.css.map */

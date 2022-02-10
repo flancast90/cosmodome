@@ -8,6 +8,9 @@ class Ship {
         this.fingerprint = fingerprint;
 
         this.username = "Unknown";
+        this.colors = ["gray", "gray", "gray", "gray", "gray", "gray"]
+        this.catSecret = false;
+        this.boost = false;
         this.ship = Math.round(Math.random() * 2);
         this.joinedAt = Date.now();
         this.score = 49850;
@@ -71,7 +74,11 @@ class Ship {
         this.pos.y += (this.end.y - this.pos.y) * 0.05;
 
         var speed = movementSpeed;
-        this.score += 0.2;
+        if (this.boost == false) {
+            this.score += 0.2;
+        } else {
+            this.score += (0.2*1.5);
+        }
 
         if (this.perms >= Ship.Perms.Admin) {
             speed *= 1.5;

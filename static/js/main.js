@@ -33,8 +33,12 @@ var socket = io();
 // every time we need a new ship.
 var spritesheet = new Image();
 
+// for cheatcode
+var kittycat = new Image();
+
 window.onload = function() {
     spritesheet.src= `images/ships.png`;
+    kittycat.src=`images/kittycat.png`;
 }
 
 document.querySelector('#discord').style.display = 'block';
@@ -134,13 +138,6 @@ function decideShip(num, r, shield) {
         }
     }
 
-    /*var img = new Image();
-    if (shield == true) {
-        img.src = `images/ships/`+num+`;`+r+`-shield.png`;
-    } else {
-        img.src = `images/ships/`+num+`;`+r+`.png`;
-    }
-    return img;*/
     return [x, spriteWidth, spriteHeight]
 }
 
@@ -364,14 +361,23 @@ function clamp() {
 var drawBoard = function(w, h) {
     if (clamp()) return;
 
+    var gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, ship.colors[0]);
+    gradient.addColorStop(.2, ship.colors[1]);
+    gradient.addColorStop(.4, ship.colors[2]);
+    gradient.addColorStop(.6, ship.colors[3]);
+    gradient.addColorStop(.8, ship.colors[4]);
+    gradient.addColorStop(1, ship.colors[5]); 
+
 	ctx.beginPath();
     //clamp(ship.pos.x, ship.pos.y)
 	
     for (x = 0; x <= w; x += 50) {
+
         // draw vertical lines after pos.x
         ctx.moveTo(x+ship.pos.x, 0);
         ctx.lineTo(x+ship.pos.x, h);
-        
+
         // draw vertical lines before pos.x
         ctx.moveTo(ship.pos.x-x, 0);
         ctx.lineTo(ship.pos.x-x, h);
@@ -386,7 +392,8 @@ var drawBoard = function(w, h) {
             ctx.lineTo(w, ship.pos.y-y);	
         }
     }
-    ctx.strokeStyle = "gray";
+
+    ctx.strokeStyle = gradient;
     ctx.stroke();
     
     ctx.closePath();
@@ -447,7 +454,11 @@ function update() {
     if ((ship.shieldActive != true)&&(ship.invisibilityActive != true)) {
         var cut = decideShip(ship.ship, ship.pos.r, false)
 
-        ctx.drawImage(spritesheet, cut[0], 0, cut[1], cut[2], 0, 0, shipWidth, shipWidth);
+        if (ship.catSecret == false) {
+            ctx.drawImage(spritesheet, cut[0], 0, cut[1], cut[2], 0, 0, shipWidth, shipWidth);
+        } else {
+            ctx.drawImage(kittycat, 0, 0, shipWidth, shipWidth);
+        }
     } else if (ship.invisibilityActive != true) {
         shipWidth *= 1.5;
         // get spritesheet coords [before x, cropWidth, cropHeight]
@@ -476,7 +487,11 @@ function update() {
             if (enemy.shieldActive != true) {
                 var cut2 = decideShip(enemy.ship, enemy.pos.r, false);
 
-                ctx.drawImage(spritesheet, cut2[0], 0, cut2[1], cut2[2], ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth);
+                if (enemy.catSecret == false) {
+                    ctx.drawImage(spritesheet, cut2[0], 0, cut2[1], cut2[2], ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth);
+                } else {
+                    ctx.drawImage(kittycat, ship.pos.x - enemy.pos.x, ship.pos.y - enemy.pos.y, shipWidth, shipWidth)
+                }
             } else {
                 var cut2 = decideShip(enemy.ship, enemy.pos.r, true);
 
@@ -534,6 +549,10 @@ document.getElementById('chatForm').addEventListener('submit', function(e) {
     document.getElementById('chatinput').value = "";
 
     e.preventDefault();
+});
+
+socket.on("cheatcodeResponse", text => {
+    alert(text);
 });
 
 socket.on("chat", data => {
