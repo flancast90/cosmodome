@@ -8,12 +8,12 @@ class Ship {
         this.fingerprint = fingerprint;
 
         this.username = "Unknown";
-        this.colors = ["gray", "gray", "gray", "gray", "gray", "gray"]
+        this.colors = ["#303030", "#303030", "#303030", "#303030", "#303030", "#303030"]
         this.catSecret = false;
         this.boost = false;
         this.ship = Math.round(Math.random() * 2);
         this.joinedAt = Date.now();
-        this.score = 49850;
+        this.score = 100;
         this.isAi = isAi;
         this.isDead = false;
         this.scale = 1.15;

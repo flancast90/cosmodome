@@ -191,8 +191,12 @@ socket.on('join', data => {
         var temp = null;
 
         // add all player scores to the leaderboard variable
-        for (var player in leaderboard) {
-            var name = state[player].username.substring(0, 10);
+        for (var player in leaderboard) {   
+            try {
+                var name = state[player].username.substring(0, 10);
+            } catch {
+                var name = state[player].username;
+            }
             var score = parseInt(state[player].score);
 
             top5.push(score)
